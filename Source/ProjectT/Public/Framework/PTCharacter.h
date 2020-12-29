@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Engine/DataTable.h"
 #include "GameFramework/Character.h"
 #include "Data/StatData.h"
 #include "PTCharacter.generated.h"
@@ -23,28 +24,34 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly)
 	void AddExp(float Value);
 
-	//FORCEINLINE class UWeaponComponent* GetWeaponComponent() const noexcept { return WeaponComp; }
+	FORCEINLINE class UWeaponComponent* GetWeapon() const noexcept { return WeaponComp; }
 	FORCEINLINE bool IsDeath() const noexcept { return bIsDeath; }
 
 private:
+#if WITH_EDITOR
+	void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
+#endif
+
+	void PostInitializeComponents() override;
 	void BeginPlay() override;
 
 	float TakeDamage(float Damage, const FDamageEvent& DamageEvent,
 		AController* EventInstigator, AActor* DamageCauser) override;
 
+	void Initialize();
 	void Death();
 
 public:
 	FOnDeath OnDeath;
 
 private:
-	//UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
-	//UWeaponComponent* WeaponComp;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
+	UWeaponComponent* WeaponComp;
 
-	UPROPERTY(EditDefaultsOnly)
-	class UDataTable* StatDataTable;
+	UPROPERTY(EditAnywhere, meta = (AllowPrivateAccess = true))
+	FDataTableRowHandle CharacterKey;
 
-	FStatData Stat;
+	FStatData StatData;
 
 	float Health;
 	float CurExp;

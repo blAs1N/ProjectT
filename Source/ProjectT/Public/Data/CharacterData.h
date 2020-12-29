@@ -1,41 +1,39 @@
 #pragma once
 
-#include "CoreMinimal.h"
-#include "UObject/ObjectMacros.h"
-#include "StatData.generated.h"
+#include "Engine/DataTable.h"
+#include "Data/StatData.h"
+#include "Data/WeaponData.h"
+#include "CharacterData.generated.h"
 
 USTRUCT(Atomic, BlueprintType)
-struct PROJECTT_API FStatData
+struct PROJECTT_API FCharacterData : public FTableRowBase
 {
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float Health;
+	FText Name;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float HealthInc;
+	TAssetPtr<class USkeletalMesh> Mesh;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float WalkSpeed;
+	TSubclassOf<class UAnimInstance> AnimClass;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float RunSpeed;
+	float CapsuleHalfHeight;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float CrouchSpeed;
+	float CapsuleRadius;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float CrawlSpeed;
+	float MeshZ;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float WalkSpeedInc;
+	float MeshYaw;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float RunSpeedInc;
+	FStatData StatData;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float CrouchSpeedInc;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float CrawlSpeedInc;
+	FWeaponData WeaponData;
 };

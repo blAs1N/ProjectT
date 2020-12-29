@@ -25,6 +25,16 @@ void UWeaponComponent::Initialize(const FWeaponData& WeaponData)
 	AttachToComponent(GetAttachParent(), FAttachmentTransformRules::KeepRelativeTransform, WeaponData.Socket);
 }
 
+void UWeaponComponent::StartFire()
+{
+	ServerStartFire();
+}
+
+void UWeaponComponent::StopFire()
+{
+	ServerStopFire();
+}
+
 void UWeaponComponent::TickComponent(float DeltaTime,
 	ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {

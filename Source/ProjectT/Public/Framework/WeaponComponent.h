@@ -17,8 +17,11 @@ public:
 
 	void Initialize(const struct FWeaponData& InWeaponData);
 
-	FORCEINLINE void StartFire() { ServerStartFire(); }
-	FORCEINLINE void StopFire() { ServerStopFire(); }
+	UFUNCTION(BlueprintCallable)
+	void StartFire();
+
+	UFUNCTION(BlueprintCallable)
+	void StopFire();
 
 	void Reload();
 

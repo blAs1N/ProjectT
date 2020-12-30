@@ -20,16 +20,16 @@ struct PROJECTT_API FCharacterData : public FTableRowBase
 	TSubclassOf<class UAnimInstance> AnimClass;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FVector MeshLocation;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FRotator MeshRotation;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float CapsuleHalfHeight;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float CapsuleRadius;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float MeshZ;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float MeshYaw;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FStatData StatData;

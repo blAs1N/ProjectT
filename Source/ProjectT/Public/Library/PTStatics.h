@@ -12,10 +12,7 @@ public:
 	template <class T, class Func>
 	static void AsyncLoad(const TAssetPtr<T>& SoftPtr, Func&& Fn)
 	{
-		if (SoftPtr.IsNull())
-			return;
-
-		if (SoftPtr.IsPending())
+		if (!SoftPtr.IsNull() && SoftPtr.IsPending())
 		{
 			auto Callback = FStreamableDelegate::CreateLambda(Forward<Func>(Fn));
 			UAssetManager::GetStreamableManager().RequestAsyncLoad(SoftPtr.ToSoftObjectPath(), MoveTemp(Callback));

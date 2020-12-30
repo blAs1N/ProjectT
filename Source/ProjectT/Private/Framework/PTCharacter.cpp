@@ -22,7 +22,7 @@ void APTCharacter::Heal(float Value)
 	check(HasAuthority());
 	if (Value == 0.0f) return;
 
-	Health = FMath::Clamp(Health + Value, 0.0f, StatData.Health);
+	Health = FMath::Clamp(Health + Value, 0.0f, Stat.Health);
 }
 
 void APTCharacter::AddExp(float Value)
@@ -34,7 +34,7 @@ void APTCharacter::AddExp(float Value)
 	{
 		++Level;
 		MaxExp += ExpIncValue;
-		StatData.Health += StatData.HealthInc;
+		Stat.Health += Stat.HealthInc;
 	}
 }
 
@@ -62,7 +62,7 @@ void APTCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
-	Health = StatData.Health;
+	Health = Stat.Health;
 }
 
 float APTCharacter::TakeDamage(float Damage, const FDamageEvent& DamageEvent,
@@ -91,7 +91,7 @@ void APTCharacter::Initialize()
 	FPTStatics::AsyncLoad(Data->Mesh, [this, Data]
 		{ GetMesh()->SetSkeletalMesh(Data->Mesh.Get()); });
 
-	StatData = Data->StatData;
+	Stat = Data->StatData;
 	WeaponComp->Initialize(Data->WeaponData);
 }
 

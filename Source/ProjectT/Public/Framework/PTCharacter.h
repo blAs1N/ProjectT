@@ -51,7 +51,7 @@ private:
 	UPROPERTY(EditAnywhere, meta = (AllowPrivateAccess = true))
 	FDataTableRowHandle CharacterKey;
 
-	FStatData StatData;
+	FStatData Stat;
 
 	float Health;
 	float CurExp;

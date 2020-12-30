@@ -55,6 +55,7 @@ private:
 
 	float Health;
 	float CurExp;
+	float CurMaxExp;
 	
 	UPROPERTY(EditDefaultsOnly, meta = (AllowPrivateAccess = true))
 	float MaxExp;

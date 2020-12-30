@@ -30,12 +30,14 @@ void APTCharacter::AddExp(float Value)
 	check(HasAuthority());
 
 	CurExp += Value;
-	while (CurExp >= MaxExp)
+	while (CurExp >= CurMaxExp)
 	{
 		++Level;
-		MaxExp += ExpIncValue;
+		CurMaxExp += ExpIncValue;
 		Stat.Health += Stat.HealthInc;
 	}
+
+	Health = Stat.Health;
 }
 
 #if WITH_EDITOR
@@ -63,6 +65,7 @@ void APTCharacter::BeginPlay()
 	Super::BeginPlay();
 
 	Health = Stat.Health;
+	CurMaxExp = MaxExp;
 }
 
 float APTCharacter::TakeDamage(float Damage, const FDamageEvent& DamageEvent,

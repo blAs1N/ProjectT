@@ -35,14 +35,83 @@ void UWeaponComponent::StopFire()
 	ServerStopFire();
 }
 
+void UWeaponComponent::StartAim()
+{
+	ServerStartAim();
+}
+
+void UWeaponComponent::StopAim()
+{
+	ServerStopAim();
+}
+
+void UWeaponComponent::Reload()
+{
+	ServerReload();
+}
+
+void UWeaponComponent::SetShootMode(EShootMode ShootMode)
+{
+	if (Stat.ShootMode != ShootMode && Stat.ShootableMode & (1 << static_cast<int32>(ShootMode)))
+		ServerSetShootMode(ShootMode);
+}
+
+void UWeaponComponent::LevelUp(uint8 LevelInc)
+{
+	AdditionalDmg += Stat.DamageInc * LevelInc;
+	Stat.Distance += Stat.DistanceInc * LevelInc;
+	Stat.MaxDamageDistance += Stat.MaxDamageDistanceInc * LevelInc;
+
+	Stat.Speed += Stat.SpeedInc * LevelInc;
+	Stat.AimSpeed += Stat.AimSpeedInc * LevelInc;
+
+	FVector2D SpreadDecVec;
+	if (bAiming)
+		SpreadDecVec.Set(Stat.AimMinSpreadDec, Stat.AimMaxSpreadDec);
+	else
+		SpreadDecVec.Set(Stat.MinSpreadDec, Stat.MaxSpreadDec);
+	
+	FVector2D PrevSpread{ MinSpread, MaxSpread };
+	FVector2D CurSpread = PrevSpread - (SpreadDecVec * LevelInc);
+
+	Spread = FMath::GetMappedRangeValueUnclamped(PrevSpread, CurSpread, Spread);
+
+	Stat.MinSpread -= Stat.MinSpreadDec * LevelInc;
+	Stat.MaxSpread -= Stat.MaxSpreadDec * LevelInc;
+	Stat.SpreadInc -= Stat.SpreadIncDec * LevelInc;
+	Stat.SpreadDec += Stat.SpreadDecInc * LevelInc;
+
+	Stat.AimMinSpread -= Stat.AimMinSpreadDec * LevelInc;
+	Stat.AimMaxSpread -= Stat.AimMaxSpreadDec * LevelInc;
+	Stat.AimSpreadInc -= Stat.AimSpreadIncDec * LevelInc;
+	Stat.AimSpreadDec += Stat.AimSpreadDecInc * LevelInc;
+
+	Stat.MinRecoil -= Stat.MinRecoilDec * LevelInc;
+	Stat.MaxRecoil -= Stat.MaxRecoilDec * LevelInc;
+
+	Stat.AimMinRecoil -= Stat.AimMinRecoilDec * LevelInc;
+	Stat.AimMaxRecoil -= Stat.AimMaxRecoilDec * LevelInc;
+
+	Stat.ReloadTime -= Stat.ReloadTimeDec * LevelInc;
+}
+
+void UWeaponComponent::BeginPlay()
+{
+	Super::BeginPlay();
+
+	if (GetOwner()->HasAuthority())
+		ServerStopAim_Implementation();
+}
+
 void UWeaponComponent::TickComponent(float DeltaTime,
 	ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+	if (!GetOwner()->HasAuthority()) return;
 
-	if (bFiring)
+	if (bFiring && Speed > 0.0f)
 	{
-		const auto Delay = 1.0f / (bZooming ? Stat.ZoomSpeed : Stat.Speed);
+		const auto Delay = 1.0f / Speed;
 		for (; FireLag >= Delay; FireLag -= Delay)
 			Shoot();
 
@@ -50,17 +119,61 @@ void UWeaponComponent::TickComponent(float DeltaTime,
 		return;
 	}
 	
-	Spread = FMath::Max(Spread - (Stat.SpreadDec * DeltaTime), bZooming ? Stat.ZoomMinSpread : Stat.MinSpread);
+	Spread = FMath::Max(Spread - (Stat.SpreadDec * DeltaTime), bAiming ? Stat.AimMinSpread : Stat.MinSpread);
 }
 
-void UWeaponComponent::ServerStartFire_Implementation() noexcept
+void UWeaponComponent::ServerStartFire_Implementation()
 {
-	FireLag = 1.0f / (bZooming ? Stat.ZoomSpeed : Stat.Speed);
+	FireLag = 1.0f / Speed;
 	bFiring = true;
+}
+
+void UWeaponComponent::ServerStopFire_Implementation()
+{
+	bFiring = false;
+}
+
+void UWeaponComponent::ServerStartAim_Implementation()
+{
+	MinRecoil = Stat.AimMinRecoil;
+	MaxRecoil = Stat.AimMaxRecoil;
+
+	MinSpread = Stat.AimMinSpread;
+	MaxSpread = Stat.AimMaxSpread;
+	SpreadInc = Stat.AimSpreadInc;
+	SpreadDec = Stat.AimSpreadDec;
+
+	Speed = Stat.AimSpeed;
+	bAiming = true;
+}
+
+void UWeaponComponent::ServerStopAim_Implementation()
+{
+	MinRecoil = Stat.MinRecoil;
+	MaxRecoil = Stat.MaxRecoil;
+
+	MinSpread = Stat.MinSpread;
+	MaxSpread = Stat.MaxSpread;
+	SpreadInc = Stat.SpreadInc;
+	SpreadDec = Stat.SpreadDec;
+
+	Speed = Stat.Speed;
+	bAiming = false;
+}
+
+void UWeaponComponent::ServerReload_Implementation()
+{
+	ServerStopAim_Implementation();
+	ServerStopFire_Implementation();
+}
+
+void UWeaponComponent::ServerSetShootMode_Implementation(EShootMode NewShootMode)
+{
+	Stat.ShootMode = NewShootMode;
 }
 
 void UWeaponComponent::Shoot()
 {
 	UE_LOG(LogTemp, Log, TEXT("Shoot!"));
-	Spread = FMath::Max(Spread + Stat.SpreadInc, bZooming ? Stat.ZoomMaxSpread : Stat.MaxSpread);
+	Spread = FMath::Max(Spread + Stat.SpreadInc, MaxSpread);
 }

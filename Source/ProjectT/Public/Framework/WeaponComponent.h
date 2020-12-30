@@ -23,9 +23,25 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void StopFire();
 
+	UFUNCTION(BlueprintCallable)
+	void StartAim();
+
+	UFUNCTION(BlueprintCallable)
+	void StopAim();
+
+	UFUNCTION(BlueprintCallable)
 	void Reload();
 
+	UFUNCTION(BlueprintCallable)
+	void SetShootMode(EShootMode NewShootMode);
+
+	void LevelUp(uint8 LevelInc);
+
+	int32 GetShootableModes() const noexcept { return Stat.ShootableMode; }
+
 private:
+	void BeginPlay() override;
+
 	void TickComponent(float DeltaTime, ELevelTick TickType,
 		FActorComponentTickFunction* ThisTickFunction) override;
 
@@ -35,18 +51,54 @@ private:
 	UFUNCTION(Server, Reliable, WithValidation)
 	void ServerStopFire();
 
-	void ServerStartFire_Implementation() noexcept;
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerStartAim();
+
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerStopAim();
+
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerReload();
+
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerSetShootMode(EShootMode NewShootMode);
+
+	void ServerStartFire_Implementation();
 	FORCEINLINE bool ServerStartFire_Validate() const noexcept { return !bFiring; }
 
-	FORCEINLINE void ServerStopFire_Implementation() noexcept { bFiring = false; }
-	FORCEINLINE bool ServerStopFire_Validate() const noexcept { return bFiring; }
+	void ServerStopFire_Implementation();
+	FORCEINLINE bool ServerStopFire_Validate() const noexcept { return true; }
+
+	void ServerStartAim_Implementation();
+	FORCEINLINE bool ServerStartAim_Validate() const noexcept { return true; }
+
+	void ServerStopAim_Implementation();
+	FORCEINLINE bool ServerStopAim_Validate() const noexcept { return true; }
+
+	void ServerReload_Implementation();
+	FORCEINLINE bool ServerReload_Validate() const noexcept { return true; }
+
+	void ServerSetShootMode_Implementation(EShootMode NewShootMode);
+	FORCEINLINE bool ServerSetShootMode_Validate(EShootMode NewShootMode) const noexcept { return true; }
 
 	void Shoot();
 
 private:
 	FWeaponStatData Stat;
+
+	FVector2D MinRecoil;
+	FVector2D MaxRecoil;
+
+	float MinSpread;
+	float MaxSpread;
+	float SpreadInc;
+	float SpreadDec;
+	float Speed;
+
+	float AdditionalDmg;
 	float FireLag;
 	float Spread;
-	uint8 bZooming : 1;
+
+	uint8 bAiming : 1;
 	uint8 bFiring : 1;
 };

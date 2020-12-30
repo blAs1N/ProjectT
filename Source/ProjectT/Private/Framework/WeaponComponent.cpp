@@ -94,6 +94,8 @@ void UWeaponComponent::LevelUp(uint8 LevelInc)
 	Stat.AimMaxRecoil -= Stat.AimMaxRecoilDec * LevelInc;
 
 	Stat.ReloadTime -= Stat.ReloadTimeDec * LevelInc;
+
+	bAiming ? SetAimData() : SetUnaimData();
 }
 
 void UWeaponComponent::BeginPlay()
@@ -115,22 +117,28 @@ void UWeaponComponent::TickComponent(float DeltaTime,
 		for (; FireLag <= 0; FireLag += Delay)
 			Shot();
 
-		FireLag += DeltaTime;
-		return;
+		FireLag -= DeltaTime;
 	}
-	
-	Spread = FMath::Max(Spread - (Stat.SpreadDec * DeltaTime), bAiming ? Stat.AimMinSpread : Stat.MinSpread);
+	else
+	{
+		Spread = FMath::Max(Spread - (Stat.SpreadDec * DeltaTime), bAiming ? Stat.AimMinSpread : Stat.MinSpread);
+		FireLag = FMath::Max(FireLag - DeltaTime, 0.0f);
+	}
 }
 
 void UWeaponComponent::ServerStartFire_Implementation()
 {
-	FireLag = 1.0f / Speed;
+	if (bFiring) return;
+
+	const uint8 LeftBullets[3]{ 1, Stat.BulletInBurst, 0 };
+	LeftBullet = LeftBullets[static_cast<uint8>(Stat.ShotMode)];
 	bFiring = true;
 }
 
 void UWeaponComponent::ServerStopFire_Implementation()
 {
-	bFiring = false;
+	if (Stat.ShotMode == EShotMode::FullAuto)
+		bFiring = false;
 }
 
 void UWeaponComponent::ServerStartAim_Implementation()

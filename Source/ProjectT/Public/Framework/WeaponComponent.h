@@ -102,6 +102,8 @@ private:
 	float FireLag;
 	float Spread;
 
-	uint8 bAiming : 1;
+	uint8 LeftBullet;
 	uint8 bFiring : 1;
+	uint8 bAiming : 1;
+	uint8 bRelaoding : 1;
 };

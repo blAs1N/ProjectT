@@ -12,7 +12,7 @@ struct PROJECTT_API FStatData
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float Health;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ToopTip = "ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ToopTip = "·¹º§ ´ç Áõ°¡·®"))
 	float HealthInc;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -26,16 +26,4 @@ struct PROJECTT_API FStatData
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float CrawlSpeed;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float WalkSpeedInc;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float RunSpeedInc;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float CrouchSpeedInc;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float CrawlSpeedInc;
 };

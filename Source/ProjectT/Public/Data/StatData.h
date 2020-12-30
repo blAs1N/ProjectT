@@ -9,21 +9,21 @@ struct PROJECTT_API FStatData
 {
 	GENERATED_BODY()
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	float Health;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ToopTip = "레벨 당 증가량"))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (ToopTip = "레벨 당 증가량"))
 	float HealthInc;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	float WalkSpeed;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	float RunSpeed;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	float CrouchSpeed;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	float CrawlSpeed;
 };

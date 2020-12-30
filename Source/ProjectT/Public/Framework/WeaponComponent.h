@@ -83,6 +83,9 @@ private:
 
 	void Shot();
 
+	void SetAimData();
+	void SetUnaimData();
+
 private:
 	FWeaponStatData Stat;
 

@@ -134,30 +134,12 @@ void UWeaponComponent::ServerStopFire_Implementation()
 
 void UWeaponComponent::ServerStartAim_Implementation()
 {
-	MinRecoil = Stat.AimMinRecoil;
-	MaxRecoil = Stat.AimMaxRecoil;
-
-	MinSpread = Stat.AimMinSpread;
-	MaxSpread = Stat.AimMaxSpread;
-	SpreadInc = Stat.AimSpreadInc;
-	SpreadDec = Stat.AimSpreadDec;
-
-	Delay = (Stat.AimSpeed > 0.0f) ? (1.0f / Stat.AimSpeed) : 0.0f;
-	bAiming = true;
+	SetAimData();
 }
 
 void UWeaponComponent::ServerStopAim_Implementation()
 {
-	MinRecoil = Stat.MinRecoil;
-	MaxRecoil = Stat.MaxRecoil;
-
-	MinSpread = Stat.MinSpread;
-	MaxSpread = Stat.MaxSpread;
-	SpreadInc = Stat.SpreadInc;
-	SpreadDec = Stat.SpreadDec;
-
-	Delay = (Stat.Speed > 0.0f) ? (1.0f / Stat.Speed) : 0.0f;
-	bAiming = false;
+	SetUnaimData();
 }
 
 void UWeaponComponent::ServerReload_Implementation()
@@ -175,4 +157,36 @@ void UWeaponComponent::Shot()
 {
 	UE_LOG(LogTemp, Log, TEXT("Shot!"));
 	Spread = FMath::Max(Spread + Stat.SpreadInc, MaxSpread);
+
+	if (Stat.ShotMode != EShotMode::FullAuto)
+		if (--LeftBullet == 0)
+			bFiring = false;
+}
+
+void UWeaponComponent::SetAimData()
+{
+	MinRecoil = Stat.AimMinRecoil;
+	MaxRecoil = Stat.AimMaxRecoil;
+
+	MinSpread = Stat.AimMinSpread;
+	MaxSpread = Stat.AimMaxSpread;
+	SpreadInc = Stat.AimSpreadInc;
+	SpreadDec = Stat.AimSpreadDec;
+
+	Delay = (Stat.AimSpeed > 0.0f) ? (1.0f / Stat.AimSpeed) : 0.0f;
+	bAiming = true;
+}
+
+void UWeaponComponent::SetUnaimData()
+{
+	MinRecoil = Stat.MinRecoil;
+	MaxRecoil = Stat.MaxRecoil;
+
+	MinSpread = Stat.MinSpread;
+	MaxSpread = Stat.MaxSpread;
+	SpreadInc = Stat.SpreadInc;
+	SpreadDec = Stat.SpreadDec;
+
+	Delay = (Stat.Speed > 0.0f) ? (1.0f / Stat.Speed) : 0.0f;
+	bAiming = false;
 }

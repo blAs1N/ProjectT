@@ -43,9 +43,10 @@ void APTCharacter::AddExp(float Value)
 void APTCharacter::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
 {
 	Super::PostEditChangeProperty(PropertyChangedEvent);
-
-	static const FName& CharKeyName = GET_MEMBER_NAME_CHECKED(APTCharacter, CharacterKey);
-	if (PropertyChangedEvent.Property && PropertyChangedEvent.GetPropertyName() == CharKeyName)
+	if (!PropertyChangedEvent.Property) return;
+	
+	const auto PropertyName = PropertyChangedEvent.GetPropertyName();
+	if (PropertyName == TEXT("DataTable") || PropertyName == TEXT("RowName"))
 		Initialize();
 }
 
@@ -78,27 +79,20 @@ float APTCharacter::TakeDamage(float Damage, const FDamageEvent& DamageEvent,
 
 void APTCharacter::Initialize()
 {
-	if (const auto* Data = CharacterKey.GetRow<FCharacterData>(TEXT("")))
-	{
-		FPTStatics::AsyncLoad(Data->Mesh, [this, Data]
-		{
-			GetCapsuleComponent()->SetCapsuleSize(Data->CapsuleRadius, Data->CapsuleHalfHeight);
+	static const FCharacterData DefaultData{};
 
-			GetMesh()->SetAnimClass(Data->AnimClass);
-			GetMesh()->SetSkeletalMesh(Data->Mesh.Get());
+	const auto* Data = CharacterKey.GetRow<FCharacterData>(TEXT(""));
+	if (!Data) Data = &DefaultData;
 
-			const FVector& Location = GetMesh()->GetRelativeLocation();
-			const FRotator& Rotation = GetMesh()->GetRelativeRotation();
+	GetCapsuleComponent()->SetCapsuleSize(Data->CapsuleRadius, Data->CapsuleHalfHeight);
+	GetMesh()->SetRelativeLocationAndRotation(Data->MeshLocation, Data->MeshRotation);
+	GetMesh()->SetAnimClass(Data->AnimClass);
+	
+	FPTStatics::AsyncLoad(Data->Mesh, [this, Data]
+		{ GetMesh()->SetSkeletalMesh(Data->Mesh.Get()); });
 
-			GetMesh()->SetRelativeLocationAndRotation(
-				FVector{ Location.X, Location.Y, Data->MeshZ },
-				FRotator{ Rotation.Pitch, Data->MeshYaw, Rotation.Roll }
-			);
-		});
-
-		StatData = Data->StatData;
-		WeaponComp->Initialize(Data->WeaponData);
-	}
+	StatData = Data->StatData;
+	WeaponComp->Initialize(Data->WeaponData);
 }
 
 void APTCharacter::Death()

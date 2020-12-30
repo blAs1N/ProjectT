@@ -15,7 +15,7 @@ struct PROJECTT_API FWeaponStatData
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float MaxDamage;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ToolTip = "ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½"))
 	float DamageInc;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -36,10 +36,10 @@ struct PROJECTT_API FWeaponStatData
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float MaxSpread;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ToolTip = "»ç°Ý 1È¸ ´ç Áõ°¡·®"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ToolTip = "ï¿½ï¿½ï¿½ 1È¸ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½"))
 	float SpreadInc;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ToolTip = "1ÃÊ °£ Áõ°¡·®"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ToolTip = "1ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½Ò·ï¿½"))
 	float SpreadDec;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -48,10 +48,10 @@ struct PROJECTT_API FWeaponStatData
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float ZoomMaxSpread;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ToolTip = "»ç°Ý 1È¸ ´ç Áõ°¡·®"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ToolTip = "ï¿½ï¿½ï¿½ 1È¸ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½"))
 	float ZoomSpreadInc;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ToolTip = "1ÃÊ °£ Áõ°¡·®"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ToolTip = "1ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½"))
 	float ZoomSpreadDec;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)

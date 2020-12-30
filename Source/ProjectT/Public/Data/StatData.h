@@ -12,7 +12,7 @@ struct PROJECTT_API FStatData
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float Health;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ToopTip = "���� �� ������"))
 	float HealthInc;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)

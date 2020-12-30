@@ -1,7 +1,6 @@
 #pragma once
 
-#include "CoreMinimal.h"
-#include "UObject/ObjectMacros.h"
+#include "Data/ShootMode.h"
 #include "WeaponStatData.generated.h"
 
 USTRUCT(Atomic, BlueprintType)
@@ -15,20 +14,38 @@ struct PROJECTT_API FWeaponStatData
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float MaxDamage;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ToolTip = "ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ToolTip = "·¹º§ ´ç Áõ°¡·®"))
 	float DamageInc;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float Distance;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ToolTip = "·¹º§ ´ç Áõ°¡·®"))
+	float DistanceInc;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float MaxDamageDistance;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ToolTip = "·¹º§ ´ç Áõ°¡·®"))
+	float MaxDamageDistanceInc;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (Bitmask, BitmaskEnum = "EShootMode"))
+	int32 ShootableMode = 1;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (Bitmask, BitmaskEnum = "EShootMode"))
+	EShootMode ShootMode;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (UIMin = 0.01f, ClampMin = 0.01f))
 	float Speed = 0.01f;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ToolTip = "·¹º§ ´ç Áõ°¡·®"))
+	float SpeedInc;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (UIMin = 0.01f, ClampMin = 0.01f))
-	float ZoomSpeed = 0.01f;
+	float AimSpeed = 0.01f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ToolTip = "·¹º§ ´ç Áõ°¡·®"))
+	float AimSpeedInc;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float MinSpread;
@@ -36,30 +53,87 @@ struct PROJECTT_API FWeaponStatData
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float MaxSpread;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ToolTip = "ï¿½ï¿½ï¿½ 1È¸ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ToolTip = "»ç°Ý 1È¸ ´ç Áõ°¡·®"))
 	float SpreadInc;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ToolTip = "1ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½Ò·ï¿½"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ToolTip = "1ÃÊ °£ °¨¼Ò·®"))
 	float SpreadDec;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float ZoomMinSpread;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ToolTip = "·¹º§ ´ç °¨¼Ò·®"))
+	float MinSpreadDec;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ToolTip = "·¹º§ ´ç °¨¼Ò·®"))
+	float MaxSpreadDec;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ToolTip = "»ç°Ý 1È¸ ´ç Áõ°¡·®ÀÇ ·¹º§ ´ç °¨¼Ò·®"))
+	float SpreadIncDec;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ToolTip = "1ÃÊ°£ °¨¼Ò·®ÀÇ ·¹º§ ´ç Áõ°¡·®"))
+	float SpreadDecInc;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float ZoomMaxSpread;
+	float AimMinSpread;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ToolTip = "ï¿½ï¿½ï¿½ 1È¸ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½"))
-	float ZoomSpreadInc;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float AimMaxSpread;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ToolTip = "1ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½"))
-	float ZoomSpreadDec;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ToolTip = "»ç°Ý 1È¸ ´ç Áõ°¡·®"))
+	float AimSpreadInc;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ToolTip = "1ÃÊ °£ Áõ°¡·®"))
+	float AimSpreadDec;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ToolTip = "·¹º§ ´ç °¨¼Ò·®"))
+	float AimMinSpreadDec;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ToolTip = "·¹º§ ´ç °¨¼Ò·®"))
+	float AimMaxSpreadDec;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ToolTip = "»ç°Ý 1È¸ ´ç Áõ°¡·®ÀÇ ·¹º§ ´ç °¨¼Ò·®"))
+	float AimSpreadIncDec;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ToolTip = "1ÃÊ°£ °¨¼Ò·®ÀÇ ·¹º§ ´ç Áõ°¡·®"))
+	float AimSpreadDecInc;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FVector2D MinRecoil;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FVector2D MaxRecoil;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ToolTip = "·¹º§ ´ç °¨¼Ò·®"))
+	FVector2D MinRecoilDec;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ToolTip = "·¹º§ ´ç °¨¼Ò·®"))
+	FVector2D MaxRecoilDec;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FVector2D AimMinRecoil;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FVector2D AimMaxRecoil;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ToolTip = "·¹º§ ´ç °¨¼Ò·®"))
+	FVector2D AimMinRecoilDec;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ToolTip = "·¹º§ ´ç °¨¼Ò·®"))
+	FVector2D AimMaxRecoilDec;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float ReloadTime;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	uint8 ClipSize;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ToolTip = "·¹º§ ´ç °¨¼Ò·®"))
+	float ReloadTimeDec;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	uint8 BulletSize;
+	uint8 MaxAmmoInMag;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	uint8 MaxAmmoInPack;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	uint8 BulletInShoot;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	uint8 BulletInBurst;
 };

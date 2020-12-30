@@ -11,7 +11,7 @@
 APTCharacter::APTCharacter()
 	: Super(), Level(1u)
 {
-	PrimaryActorTick.bCanEverTick = true;
+	bAlwaysRelevant = true;
 
 	WeaponComp = CreateDefaultSubobject<UWeaponComponent>(TEXT("Weapon"));
 	WeaponComp->SetupAttachment(GetMesh());

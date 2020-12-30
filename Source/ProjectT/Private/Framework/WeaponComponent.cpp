@@ -15,6 +15,7 @@ void UWeaponComponent::Initialize(const FWeaponData& WeaponData)
 {
 	Stat = WeaponData.Stat;
 	Spread = Stat.MinSpread;
+	check(Stat.ShotableMode & (1 << static_cast<uint8>(Stat.ShotMode)));
 
 	FPTStatics::AsyncLoad(WeaponData.Mesh, [this, WeaponData]
 	{
@@ -52,7 +53,7 @@ void UWeaponComponent::Reload()
 
 void UWeaponComponent::SetShotMode(EShotMode ShotMode)
 {
-	if (Stat.ShotMode != ShotMode && Stat.ShotableMode & (1 << static_cast<int32>(ShotMode)))
+	if (Stat.ShotMode != ShotMode && Stat.ShotableMode & (1 << static_cast<uint8>(ShotMode)))
 		ServerSetShotMode(ShotMode);
 }
 

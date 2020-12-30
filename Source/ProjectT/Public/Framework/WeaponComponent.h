@@ -93,7 +93,7 @@ private:
 	float MaxSpread;
 	float SpreadInc;
 	float SpreadDec;
-	float Speed;
+	float Delay;
 
 	float AdditionalDmg;
 	float FireLag;

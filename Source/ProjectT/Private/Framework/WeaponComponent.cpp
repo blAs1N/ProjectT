@@ -107,12 +107,11 @@ void UWeaponComponent::TickComponent(float DeltaTime,
 	ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-	if (!GetOwner()->HasAuthority()) return;
+	if (!GetOwner()->HasAuthority() || Delay <= 0.0f) return;
 
-	if (bFiring && Speed > 0.0f)
+	if (bFiring)
 	{
-		const auto Delay = 1.0f / Speed;
-		for (; FireLag >= Delay; FireLag -= Delay)
+		for (; FireLag <= 0; FireLag += Delay)
 			Shot();
 
 		FireLag += DeltaTime;
@@ -143,7 +142,7 @@ void UWeaponComponent::ServerStartAim_Implementation()
 	SpreadInc = Stat.AimSpreadInc;
 	SpreadDec = Stat.AimSpreadDec;
 
-	Speed = Stat.AimSpeed;
+	Delay = (Stat.AimSpeed > 0.0f) ? (1.0f / Stat.AimSpeed) : 0.0f;
 	bAiming = true;
 }
 
@@ -157,7 +156,7 @@ void UWeaponComponent::ServerStopAim_Implementation()
 	SpreadInc = Stat.SpreadInc;
 	SpreadDec = Stat.SpreadDec;
 
-	Speed = Stat.Speed;
+	Delay = (Stat.Speed > 0.0f) ? (1.0f / Stat.Speed) : 0.0f;
 	bAiming = false;
 }
 

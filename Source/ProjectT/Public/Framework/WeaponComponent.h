@@ -33,11 +33,11 @@ public:
 	void Reload();
 
 	UFUNCTION(BlueprintCallable)
-	void SetShootMode(EShootMode NewShootMode);
+	void SetShotMode(EShotMode NewShotMode);
 
 	void LevelUp(uint8 LevelInc);
 
-	int32 GetShootableModes() const noexcept { return Stat.ShootableMode; }
+	int32 GetShotableModes() const noexcept { return Stat.ShotableMode; }
 
 private:
 	void BeginPlay() override;
@@ -61,7 +61,7 @@ private:
 	void ServerReload();
 
 	UFUNCTION(Server, Reliable, WithValidation)
-	void ServerSetShootMode(EShootMode NewShootMode);
+	void ServerSetShotMode(EShotMode NewShotMode);
 
 	void ServerStartFire_Implementation();
 	FORCEINLINE bool ServerStartFire_Validate() const noexcept { return !bFiring; }
@@ -78,10 +78,10 @@ private:
 	void ServerReload_Implementation();
 	FORCEINLINE bool ServerReload_Validate() const noexcept { return true; }
 
-	void ServerSetShootMode_Implementation(EShootMode NewShootMode);
-	FORCEINLINE bool ServerSetShootMode_Validate(EShootMode NewShootMode) const noexcept { return true; }
+	void ServerSetShotMode_Implementation(EShotMode NewShotMode);
+	FORCEINLINE bool ServerSetShotMode_Validate(EShotMode NewShotMode) const noexcept { return true; }
 
-	void Shoot();
+	void Shot();
 
 private:
 	FWeaponStatData Stat;

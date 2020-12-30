@@ -4,10 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "UObject/ObjectMacros.h"
-#include "ShootMode.generated.h"
+#include "ShotMode.generated.h"
 
 UENUM(BlueprintType, meta = (Bitflags))
-enum class EShootMode : uint8
+enum class EShotMode : uint8
 {
 	Single,
 	Burst,

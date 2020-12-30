@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Data/ShootMode.h"
+#include "Data/ShotMode.h"
 #include "WeaponStatData.generated.h"
 
 USTRUCT(Atomic, BlueprintType)
@@ -29,11 +29,11 @@ struct PROJECTT_API FWeaponStatData
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ToolTip = "레벨 당 증가량"))
 	float MaxDamageDistanceInc;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (Bitmask, BitmaskEnum = "EShootMode"))
-	int32 ShootableMode = 1;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (Bitmask, BitmaskEnum = "EShotMode"))
+	int32 ShotableMode = 1;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (Bitmask, BitmaskEnum = "EShootMode"))
-	EShootMode ShootMode;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (Bitmask, BitmaskEnum = "EShotMode"))
+	EShotMode ShotMode;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (UIMin = 0.01f, ClampMin = 0.01f))
 	float Speed = 0.01f;
@@ -132,7 +132,7 @@ struct PROJECTT_API FWeaponStatData
 	uint8 MaxAmmoInPack;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	uint8 BulletInShoot;
+	uint8 BulletInShot;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	uint8 BulletInBurst;

@@ -50,10 +50,10 @@ void UWeaponComponent::Reload()
 	ServerReload();
 }
 
-void UWeaponComponent::SetShootMode(EShootMode ShootMode)
+void UWeaponComponent::SetShotMode(EShotMode ShotMode)
 {
-	if (Stat.ShootMode != ShootMode && Stat.ShootableMode & (1 << static_cast<int32>(ShootMode)))
-		ServerSetShootMode(ShootMode);
+	if (Stat.ShotMode != ShotMode && Stat.ShotableMode & (1 << static_cast<int32>(ShotMode)))
+		ServerSetShotMode(ShotMode);
 }
 
 void UWeaponComponent::LevelUp(uint8 LevelInc)
@@ -113,7 +113,7 @@ void UWeaponComponent::TickComponent(float DeltaTime,
 	{
 		const auto Delay = 1.0f / Speed;
 		for (; FireLag >= Delay; FireLag -= Delay)
-			Shoot();
+			Shot();
 
 		FireLag += DeltaTime;
 		return;
@@ -167,13 +167,13 @@ void UWeaponComponent::ServerReload_Implementation()
 	ServerStopFire_Implementation();
 }
 
-void UWeaponComponent::ServerSetShootMode_Implementation(EShootMode NewShootMode)
+void UWeaponComponent::ServerSetShotMode_Implementation(EShotMode NewShotMode)
 {
-	Stat.ShootMode = NewShootMode;
+	Stat.ShotMode = NewShotMode;
 }
 
-void UWeaponComponent::Shoot()
+void UWeaponComponent::Shot()
 {
-	UE_LOG(LogTemp, Log, TEXT("Shoot!"));
+	UE_LOG(LogTemp, Log, TEXT("Shot!"));
 	Spread = FMath::Max(Spread + Stat.SpreadInc, MaxSpread);
 }

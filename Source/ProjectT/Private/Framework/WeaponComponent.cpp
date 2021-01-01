@@ -143,22 +143,26 @@ void UWeaponComponent::ServerStopFire_Implementation()
 
 void UWeaponComponent::ServerStartAim_Implementation()
 {
+	UE_LOG(LogTemp, Log, TEXT("StartAim"));
 	SetAimData();
 }
 
 void UWeaponComponent::ServerStopAim_Implementation()
 {
+	UE_LOG(LogTemp, Log, TEXT("StopAim"));
 	SetUnaimData();
 }
 
 void UWeaponComponent::ServerReload_Implementation()
 {
+	UE_LOG(LogTemp, Log, TEXT("Reload"));
 	ServerStopAim_Implementation();
 	ServerStopFire_Implementation();
 }
 
 void UWeaponComponent::ServerSetShotMode_Implementation(EShotMode NewShotMode)
 {
+	UE_LOG(LogTemp, Log, TEXT("ShotMode: %d"), static_cast<uint8>(NewShotMode));
 	Stat.ShotMode = NewShotMode;
 }
 

@@ -87,6 +87,7 @@ private:
 	void SetUnaimData();
 
 private:
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Stat, meta = (AllowPrivateAccess = true))
 	FWeaponStatData Stat;
 
 	FVector2D MinRecoil;

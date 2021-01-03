@@ -1,11 +1,11 @@
 // Copyright 1998-2019 Epic Games, Inc. All Rights Reserved.
 
-#include "Framework/PTCharacter.h"
+#include "Character/PTCharacter.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "UObject/ConstructorHelpers.h"
+#include "Character/WeaponComponent.h"
 #include "Data/CharacterData.h"
-#include "Framework/WeaponComponent.h"
 #include "Library/PTStatics.h"
 
 APTCharacter::APTCharacter()

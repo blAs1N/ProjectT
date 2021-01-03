@@ -25,5 +25,5 @@ struct PROJECTT_API FStatData
 	float CrouchSpeed;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	float CrawlSpeed;
+	float ProneSpeed;
 };

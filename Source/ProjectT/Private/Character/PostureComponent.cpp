@@ -21,6 +21,8 @@ void UPostureComponent::Initialize(const FPostureData* InPostureData)
 void UPostureComponent::ChangePosture(EPostureState NewState)
 {
 	if (State == NewState) return;
+
+	State = NewState;
 	if (State != EPostureState::Stand)
 		Unsprint();
 

@@ -25,6 +25,7 @@ public:
 	void AddExp(float Value);
 
 	FORCEINLINE class UWeaponComponent* GetWeaponComp() const noexcept { return WeaponComp; }
+	FORCEINLINE class UPostureComponent* GetPostureComp() const noexcept { return PostureComp; }
 	FORCEINLINE bool IsDeath() const noexcept { return bIsDeath; }
 
 private:
@@ -47,6 +48,9 @@ public:
 private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
 	UWeaponComponent* WeaponComp;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
+	UPostureComponent* PostureComp;
 
 	UPROPERTY(EditAnywhere, meta = (AllowPrivateAccess = true))
 	FDataTableRowHandle CharacterKey;

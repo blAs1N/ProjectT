@@ -4,17 +4,19 @@
 #include "Components/CapsuleComponent.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "UObject/ConstructorHelpers.h"
+#include "Character/PostureComponent.h"
 #include "Character/WeaponComponent.h"
 #include "Data/CharacterData.h"
 #include "Library/PTStatics.h"
 
 APTCharacter::APTCharacter()
-	: Super(), Level(1u)
 {
 	bAlwaysRelevant = true;
 
+	PostureComp = CreateDefaultSubobject<UPostureComponent>(TEXT("Posture"));
 	WeaponComp = CreateDefaultSubobject<UWeaponComponent>(TEXT("Weapon"));
 	WeaponComp->SetupAttachment(GetMesh());
+	Level = 1u;
 }
 
 void APTCharacter::Heal(float Value)
@@ -87,14 +89,13 @@ void APTCharacter::Initialize()
 	const auto* Data = CharacterKey.GetRow<FCharacterData>(TEXT(""));
 	if (!Data) Data = &DefaultData;
 
-	GetCapsuleComponent()->SetCapsuleSize(Data->CapsuleRadius, Data->CapsuleHalfHeight);
-	GetMesh()->SetRelativeLocationAndRotation(Data->MeshLocation, Data->MeshRotation);
-	GetMesh()->SetAnimClass(Data->AnimClass);
-	
+	GetMesh()->SetRelativeRotation(FRotator{ 0.0f, Data->MeshYaw, 0.0f });
+	GetMesh()->SetAnimClass(Data->AnimClass);	
 	FPTStatics::AsyncLoad(Data->Mesh, [this, Data]
 		{ GetMesh()->SetSkeletalMesh(Data->Mesh.Get()); });
 
 	Stat = Data->StatData;
+	PostureComp->Initialize(&Data->PostureData);
 	WeaponComp->Initialize(Data->WeaponData);
 }
 

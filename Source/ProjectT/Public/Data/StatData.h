@@ -14,16 +14,4 @@ struct PROJECTT_API FStatData
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (ToopTip = "레벨 당 증가량"))
 	float HealthInc;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	float WalkSpeed;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	float RunSpeed;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	float CrouchSpeed;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	float ProneSpeed;
 };

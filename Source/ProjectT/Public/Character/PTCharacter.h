@@ -24,7 +24,7 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly)
 	void AddExp(float Value);
 
-	FORCEINLINE class UWeaponComponent* GetWeapon() const noexcept { return WeaponComp; }
+	FORCEINLINE class UWeaponComponent* GetWeaponComp() const noexcept { return WeaponComp; }
 	FORCEINLINE bool IsDeath() const noexcept { return bIsDeath; }
 
 private:

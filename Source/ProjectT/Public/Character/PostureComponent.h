@@ -20,8 +20,13 @@ class PROJECTT_API UPostureComponent final : public UActorComponent
 public:
 	void Initialize(const struct FPostureData* InPostureData);
 
+	UFUNCTION(BlueprintCallable)
 	void ChangePosture(EPostureState NewState);
+
+	UFUNCTION(BlueprintCallable)
 	void Sprint();
+
+	UFUNCTION(BlueprintCallable)
 	void Unsprint();
 
 	FORCEINLINE EPostureState GetPostureState() const noexcept { return State; }

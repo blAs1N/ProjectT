@@ -21,7 +21,6 @@ struct PROJECTT_API FPostureStat
 	float MeshOffset;
 };
 
-
 USTRUCT(Atomic, BlueprintType)
 struct PROJECTT_API FPostureData
 {

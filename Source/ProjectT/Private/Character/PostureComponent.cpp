@@ -28,8 +28,10 @@ void UPostureComponent::ChangePosture(EPostureState NewState)
 
 	const FPostureData& Data = GetPostureData();
 	const FPostureStat Stat = (&Data.StandData)[static_cast<uint8>(State)];
+	const ACharacter* DefaultChar = GetDefault<ACharacter>(CharacterOwner->GetClass());
+	const float Offset = Stat.MeshOffset - DefaultChar->GetMesh()->GetRelativeLocation().Z;
 
-	CharacterOwner->OnStartCrouch(Stat.MeshOffset, Stat.MeshOffset * CharacterOwner->GetActorScale().Z);
+	CharacterOwner->OnStartCrouch(Offset, Offset * CharacterOwner->GetActorScale().Z);
 	CharacterOwner->GetMesh()->UpdateComponentToWorld();
 
 	CapsuleComp->SetCapsuleHalfHeight(Stat.HalfHeight);

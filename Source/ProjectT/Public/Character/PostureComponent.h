@@ -4,13 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "Data/PostureState.h"
 #include "PostureComponent.generated.h"
-
-UENUM(BlueprintType)
-enum class EPostureState : uint8
-{
-	Stand, Crouch, Prone
-};
 
 UCLASS()
 class PROJECTT_API UPostureComponent final : public UActorComponent

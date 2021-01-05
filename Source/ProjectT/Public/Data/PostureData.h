@@ -34,7 +34,7 @@ struct PROJECTT_API FPostureData
 	FPostureStat CrouchData;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
-	FPostureStat PostureData;
+	FPostureStat ProneData;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
 	float SprintSpeedRatio;

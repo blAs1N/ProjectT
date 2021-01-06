@@ -6,6 +6,7 @@
 #include "GameFramework/Character.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Net/UnrealNetwork.h"
+#include "TimerManager.h"
 #include "Data/PostureData.h"
 
 UPostureComponent::UPostureComponent()
@@ -26,10 +27,22 @@ void UPostureComponent::Initialize(const FPostureData* InPostureData)
 
 void UPostureComponent::SetPosture(EPostureState NewState)
 {
-	if (State == NewState) return;
+	if (bSwitchDelaying || State == NewState) return;
 
 	SetPostureImpl(NewState);
 	ServerSetPosture(NewState);
+
+	if (const UWorld* World = GetWorld())
+	{
+		const bool bSwitchProne = State == EPostureState::Prone || NewState == EPostureState::Prone;
+		const float Delay = bSwitchProne ? ProneSwitchDelay : PostureSwitchDelay;
+
+		bSwitchDelaying = true;
+		World->GetTimerManager().SetTimer(DelayTimer, [this]
+		{
+			bSwitchDelaying = false;
+		}, Delay, false);
+	}
 }
 
 void UPostureComponent::SetSprint(bool bIsSprint)

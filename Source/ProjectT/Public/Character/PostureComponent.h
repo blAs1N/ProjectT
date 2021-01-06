@@ -64,9 +64,19 @@ private:
 
 	const FPostureData* PostureData;
 
+	FTimerHandle DelayTimer;
+
+	UPROPERTY(EditAnywhere, meta = (AllowPrivateAccess = true))
+	float PostureSwitchDelay;
+
+	UPROPERTY(EditAnywhere, meta = (AllowPrivateAccess = true))
+	float ProneSwitchDelay;
+
 	UPROPERTY(Transient, VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
 	EPostureState State = EPostureState::Stand;
 
 	UPROPERTY(Transient, VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
 	uint8 bIsSprinting : 1;
+
+	uint8 bSwitchDelaying : 1;
 };

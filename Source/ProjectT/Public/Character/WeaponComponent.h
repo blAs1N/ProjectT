@@ -37,7 +37,11 @@ public:
 
 	void LevelUp(uint8 LevelInc);
 
-	int32 GetShotableModes() const noexcept { return Stat.ShotableMode; }
+	FORCEINLINE int32 GetShotableModes() const noexcept { return Stat.ShotableMode; }
+	FORCEINLINE uint8 GetLeftBullet() const noexcept { return LeftBullet; }
+	FORCEINLINE bool IsFiring() const noexcept { return bFiring; }
+	FORCEINLINE bool IsAiming() const noexcept { return bAiming; }
+	FORCEINLINE bool IsReloading() const noexcept { return bRelaoding; }
 
 private:
 	void BeginPlay() override;

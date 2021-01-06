@@ -7,30 +7,6 @@
 #include "Data/PostureState.h"
 #include "PTAnimInstance.generated.h"
 
-USTRUCT(Atomic, BlueprintType)
-struct PROJECTT_API FPostureSwitchAnims
-{
-	GENERATED_BODY()
-
-	UPROPERTY(EditAnywhere)
-	UAnimMontage* StandToCrouch;
-
-	UPROPERTY(EditAnywhere)
-	UAnimMontage* StandToProne;
-
-	UPROPERTY(EditAnywhere)
-	UAnimMontage* CrouchToStand;
-
-	UPROPERTY(EditAnywhere)
-	UAnimMontage* CrouchToProne;
-
-	UPROPERTY(EditAnywhere)
-	UAnimMontage* ProneToStand;
-
-	UPROPERTY(EditAnywhere)
-	UAnimMontage* ProneToCrouch;
-};
-
 UCLASS()
 class PROJECTT_API UPTAnimInstance final : public UAnimInstance
 {
@@ -40,9 +16,6 @@ private:
 	void NativeUpdateAnimation(float DeltaSeconds) override;
 	
 private:
-	UPROPERTY(EditAnywhere, meta = (AllowPrivateAccess = true))
-	FPostureSwitchAnims PostureSwitchAnims;
-
 	UPROPERTY(Transient, VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
 	float Direction;
 

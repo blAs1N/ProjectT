@@ -13,7 +13,7 @@ void UPTAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 
 	const FVector Velocity = Owner->GetVelocity();
 	const auto* Posture = Owner->GetPostureComp();
-	const EPostureState CurState = Posture->GetPostureState();
+	State = Posture->GetPostureState();
 	bIsSpinting = !Velocity.IsZero() && Posture->IsSprinting();
 
 	const float MaxSpeed = Owner->GetCharacterMovement()->MaxWalkSpeed;
@@ -24,15 +24,4 @@ void UPTAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 
 	const FRotator AimRot = (Owner->GetBaseAimRotation() - Rotation).GetNormalized();;
 	AimPitch = AimRot.Pitch; AimYaw = AimRot.Yaw;
-
-	if (State != CurState)
-	{
-		const uint8 From = static_cast<uint8>(State);
-		uint8 To = static_cast<uint8>(CurState);
-		if (From < To) --To;
-
-		Montage_Play((&PostureSwitchAnims.StandToCrouch)[From * 2 + To]);
-	}
-
-	State = CurState;
 }

@@ -22,6 +22,30 @@ struct PROJECTT_API FPostureStat
 };
 
 USTRUCT(Atomic, BlueprintType)
+struct PROJECTT_API FPostureSwitchAnims
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere)
+	UAnimMontage* StandToCrouch;
+
+	UPROPERTY(EditAnywhere)
+	UAnimMontage* StandToProne;
+
+	UPROPERTY(EditAnywhere)
+	UAnimMontage* CrouchToStand;
+
+	UPROPERTY(EditAnywhere)
+	UAnimMontage* CrouchToProne;
+
+	UPROPERTY(EditAnywhere)
+	UAnimMontage* ProneToStand;
+
+	UPROPERTY(EditAnywhere)
+	UAnimMontage* ProneToCrouch;
+};
+
+USTRUCT(Atomic, BlueprintType)
 struct PROJECTT_API FPostureData
 {
 	GENERATED_BODY()
@@ -34,6 +58,9 @@ struct PROJECTT_API FPostureData
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
 	FPostureStat ProneData;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
+	FPostureSwitchAnims PostureSwitchAnims;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
 	float SprintSpeedRatio;

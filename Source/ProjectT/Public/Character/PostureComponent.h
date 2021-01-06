@@ -13,21 +13,43 @@ class PROJECTT_API UPostureComponent final : public UActorComponent
 	GENERATED_BODY()
 	
 public:
+	UPostureComponent();
 	void Initialize(const struct FPostureData* InPostureData);
 
 	UFUNCTION(BlueprintCallable)
-	void ChangePosture(EPostureState NewState);
+	void SetPosture(EPostureState NewState);
 
 	UFUNCTION(BlueprintCallable)
-	void Sprint();
-
-	UFUNCTION(BlueprintCallable)
-	void Unsprint();
+	void SetSprint(bool bIsSprint);
 
 	FORCEINLINE EPostureState GetPostureState() const noexcept { return State; }
 	FORCEINLINE bool IsSprinting() const noexcept { return bIsSprinting; }
 
 private:
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerSetPosture(EPostureState NewState);
+
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerSetSprint(bool bIsSprint);
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastSetPosture(EPostureState NewState);
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastSetSprint(bool bIsSprint);
+
+	FORCEINLINE void ServerSetPosture_Implementation(EPostureState NewState) { MulticastSetPosture(NewState); }
+	FORCEINLINE bool ServerSetPosture_Validate(EPostureState NewState) const noexcept { return true; }
+
+	FORCEINLINE void ServerSetSprint_Implementation(bool bIsSprint) { MulticastSetSprint(bIsSprint); }
+	FORCEINLINE bool ServerSetSprint_Validate(bool bIsSprint) const noexcept { return true; }
+
+	void MulticastSetPosture_Implementation(EPostureState NewState);
+	void MulticastSetSprint_Implementation(bool bIsSprint);
+
+	void SetPostureImpl(EPostureState NewState);
+	void SetSprintImpl(bool bIsSprint);
+
 	const FPostureData& GetPostureData() const noexcept;
 
 private:
@@ -42,9 +64,9 @@ private:
 
 	const FPostureData* PostureData;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
+	UPROPERTY(Transient, VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
 	EPostureState State = EPostureState::Stand;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
+	UPROPERTY(Transient, VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
 	uint8 bIsSprinting : 1;
 };

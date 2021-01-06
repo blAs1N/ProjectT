@@ -21,32 +21,15 @@ void UPostureComponent::Initialize(const FPostureData* InPostureData)
 	MovementComp = CharacterOwner->GetCharacterMovement();
 
 	PostureData = InPostureData;
-	State = EPostureState::Crouch; // This is the trick to running "SetPosture". Actually, it is initialized to the Stand state.
-	SetPosture(EPostureState::Stand);
+	SetPostureData(EPostureState::Stand);
 }
 
 void UPostureComponent::SetPosture(EPostureState NewState)
 {
-	if (bSwitchDelaying || State == NewState || MovementComp->IsFalling()) return;
-
-	const bool bSwitchProne = State == EPostureState::Prone || NewState == EPostureState::Prone;
+	if (bPostureSwitching || State == NewState || MovementComp->IsFalling()) return;
 
 	SetPostureImpl(NewState);
 	ServerSetPosture(NewState);
-
-	if (const UWorld* World = GetWorld())
-	{
-		const float Delay = bSwitchProne ? ProneSwitchDelay : PostureSwitchDelay;
-		WalkSpeed = MovementComp->MaxWalkSpeed;
-		MovementComp->MaxWalkSpeed = 0.0f;
-		bSwitchDelaying = true;
-
-		World->GetTimerManager().SetTimer(DelayTimer, [this]
-		{
-			MovementComp->MaxWalkSpeed = WalkSpeed;
-			bSwitchDelaying = false;
-		}, Delay, false);
-	}
 }
 
 void UPostureComponent::SetSprint(bool bIsSprint)
@@ -71,10 +54,48 @@ void UPostureComponent::MulticastSetSprint_Implementation(bool bIsSprint)
 
 void UPostureComponent::SetPostureImpl(EPostureState NewState)
 {
-	State = NewState;
-	if (State != EPostureState::Stand)
+	if (NewState != EPostureState::Stand && bIsSprinting)
 		SetSprintImpl(false);
 
+	const EPostureState PrevState = State;
+	SetPostureData(NewState);
+
+	if (const UWorld* World = GetWorld())
+	{
+		const uint8 From = static_cast<uint8>(PrevState);
+		uint8 To = static_cast<uint8>(State);
+		if (From < To) --To;
+
+		const float Delay = CharacterOwner->PlayAnimMontage
+			((&PostureData->PostureSwitchAnims.StandToCrouch)[From * 2 + To]);
+
+		const float PrevSpeed = MovementComp->MaxWalkSpeed;
+		MovementComp->MaxWalkSpeed = 0.0f;
+		bPostureSwitching = true;
+
+		FTimerHandle DelayTimer;
+		GetWorld()->GetTimerManager().SetTimer(DelayTimer, [this, PrevSpeed]
+			{
+				MovementComp->MaxWalkSpeed = PrevSpeed;
+				bPostureSwitching = false;
+			}, Delay, false);
+	}
+}
+
+void UPostureComponent::SetSprintImpl(bool bIsSprint)
+{
+	if (bIsSprint && State != EPostureState::Stand)
+		SetPostureImpl(EPostureState::Stand);
+	
+	const FPostureData& Data = GetPostureData();
+	const float Ratio = bIsSprint ? Data.SprintSpeedRatio : Data.StandData.SpeedRatio;
+	MovementComp->MaxWalkSpeed = Data.DefaultWalkSpeed * Ratio;
+	bIsSprinting = bIsSprint;
+}
+
+void UPostureComponent::SetPostureData(EPostureState NewState)
+{	
+	State = NewState;
 	const FPostureData& Data = GetPostureData();
 	const FPostureStat Stat = (&Data.StandData)[static_cast<uint8>(State)];
 	const float Offset = Data.StandData.HalfHeight - Stat.HalfHeight + Stat.MeshOffset;
@@ -93,20 +114,8 @@ void UPostureComponent::SetPostureImpl(EPostureState NewState)
 		ClientData->OriginalMeshTranslationOffset = FVector::ZeroVector;
 	}
 
-	CapsuleComp->SetCapsuleHalfHeight(Stat.HalfHeight);
-	CapsuleComp->SetCapsuleRadius(Stat.Radius);
 	MovementComp->MaxWalkSpeed = Data.DefaultWalkSpeed * Stat.SpeedRatio;
-}
-
-void UPostureComponent::SetSprintImpl(bool bIsSprint)
-{
-	if (bIsSprint && State != EPostureState::Stand)
-		SetPostureImpl(EPostureState::Stand);
-	
-	const FPostureData& Data = GetPostureData();
-	const float Ratio = bIsSprint ? Data.SprintSpeedRatio : Data.StandData.SpeedRatio;
-	MovementComp->MaxWalkSpeed = Data.DefaultWalkSpeed * Ratio;
-	bIsSprinting = bIsSprint;
+	CapsuleComp->SetCapsuleSize(Stat.Radius, Stat.HalfHeight);
 }
 
 const FPostureData& UPostureComponent::GetPostureData() const noexcept

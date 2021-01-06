@@ -23,6 +23,7 @@ public:
 	void SetSprint(bool bIsSprint);
 
 	FORCEINLINE EPostureState GetPostureState() const noexcept { return State; }
+	FORCEINLINE bool IsPostureSwitching() const noexcept { return bPostureSwitching; }
 	FORCEINLINE bool IsSprinting() const noexcept { return bIsSprinting; }
 
 private:
@@ -50,6 +51,8 @@ private:
 	void SetPostureImpl(EPostureState NewState);
 	void SetSprintImpl(bool bIsSprint);
 
+	void SetPostureData(EPostureState NewState);
+
 	const FPostureData& GetPostureData() const noexcept;
 
 private:
@@ -64,21 +67,12 @@ private:
 
 	const FPostureData* PostureData;
 
-	FTimerHandle DelayTimer;
-
-	UPROPERTY(EditAnywhere, meta = (AllowPrivateAccess = true))
-	float PostureSwitchDelay;
-
-	UPROPERTY(EditAnywhere, meta = (AllowPrivateAccess = true))
-	float ProneSwitchDelay;
-
-	float WalkSpeed;
-
 	UPROPERTY(Transient, VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
 	EPostureState State = EPostureState::Stand;
 
 	UPROPERTY(Transient, VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
-	uint8 bIsSprinting : 1;
+	uint8 bPostureSwitching : 1;
 
-	uint8 bSwitchDelaying : 1;
+	UPROPERTY(Transient, VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
+	uint8 bIsSprinting : 1;
 };

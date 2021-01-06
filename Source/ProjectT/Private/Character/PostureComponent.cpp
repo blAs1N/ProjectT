@@ -27,7 +27,7 @@ void UPostureComponent::Initialize(const FPostureData* InPostureData)
 
 void UPostureComponent::SetPosture(EPostureState NewState)
 {
-	if (bSwitchDelaying || State == NewState) return;
+	if (bSwitchDelaying || State == NewState || MovementComp->IsFalling()) return;
 
 	const bool bSwitchProne = State == EPostureState::Prone || NewState == EPostureState::Prone;
 

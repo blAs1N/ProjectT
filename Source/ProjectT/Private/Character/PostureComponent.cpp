@@ -11,7 +11,7 @@
 
 UPostureComponent::UPostureComponent()
 {
-	bReplicates = true;
+	SetIsReplicatedByDefault(true);
 }
 
 void UPostureComponent::Initialize(const FPostureData* InPostureData)
@@ -83,7 +83,7 @@ void UPostureComponent::SetPostureImpl(EPostureState NewState)
 	CharacterOwner->OnStartCrouch(Offset, Offset * ScaleZ);
 	CharacterOwner->GetMesh()->UpdateComponentToWorld();
 
-	if (CharacterOwner->Role != ROLE_SimulatedProxy)
+	if (CharacterOwner->GetLocalRole() != ROLE_SimulatedProxy)
 	{
 		CharacterOwner->AddActorWorldOffset({ 0.f, 0.0f, (Stat.HalfHeight - CapsuleComp->GetUnscaledCapsuleHalfHeight()) * ScaleZ });
 	}

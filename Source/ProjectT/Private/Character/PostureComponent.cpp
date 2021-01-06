@@ -29,17 +29,21 @@ void UPostureComponent::SetPosture(EPostureState NewState)
 {
 	if (bSwitchDelaying || State == NewState) return;
 
+	const bool bSwitchProne = State == EPostureState::Prone || NewState == EPostureState::Prone;
+
 	SetPostureImpl(NewState);
 	ServerSetPosture(NewState);
 
 	if (const UWorld* World = GetWorld())
 	{
-		const bool bSwitchProne = State == EPostureState::Prone || NewState == EPostureState::Prone;
 		const float Delay = bSwitchProne ? ProneSwitchDelay : PostureSwitchDelay;
-
+		WalkSpeed = MovementComp->MaxWalkSpeed;
+		MovementComp->MaxWalkSpeed = 0.0f;
 		bSwitchDelaying = true;
+
 		World->GetTimerManager().SetTimer(DelayTimer, [this]
 		{
+			MovementComp->MaxWalkSpeed = WalkSpeed;
 			bSwitchDelaying = false;
 		}, Delay, false);
 	}

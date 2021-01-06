@@ -72,6 +72,8 @@ private:
 	UPROPERTY(EditAnywhere, meta = (AllowPrivateAccess = true))
 	float ProneSwitchDelay;
 
+	float WalkSpeed;
+
 	UPROPERTY(Transient, VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
 	EPostureState State = EPostureState::Stand;
 

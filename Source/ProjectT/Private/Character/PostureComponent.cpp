@@ -116,6 +116,7 @@ void UPostureComponent::SetPostureData(EPostureState NewState)
 
 	MovementComp->MaxWalkSpeed = Data.DefaultWalkSpeed * Stat.SpeedRatio;
 	CapsuleComp->SetCapsuleSize(Stat.Radius, Stat.HalfHeight);
+	OnSwitchPosture.Broadcast(State);
 }
 
 const FPostureData& UPostureComponent::GetPostureData() const noexcept

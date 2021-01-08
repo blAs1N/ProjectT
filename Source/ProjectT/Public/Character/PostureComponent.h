@@ -7,6 +7,8 @@
 #include "Data/PostureState.h"
 #include "PostureComponent.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnSwitchPosture, EPostureState, NewState);
+
 UCLASS()
 class PROJECTT_API UPostureComponent final : public UActorComponent
 {
@@ -45,15 +47,16 @@ private:
 	FORCEINLINE void ServerSetSprint_Implementation(bool bIsSprint) { MulticastSetSprint(bIsSprint); }
 	FORCEINLINE bool ServerSetSprint_Validate(bool bIsSprint) const noexcept { return true; }
 
-	void MulticastSetPosture_Implementation(EPostureState NewState);
-	void MulticastSetSprint_Implementation(bool bIsSprint);
-
 	void SetPostureImpl(EPostureState NewState);
 	void SetSprintImpl(bool bIsSprint);
 
 	void SetPostureData(EPostureState NewState);
 
 	const FPostureData& GetPostureData() const noexcept;
+
+public:
+	UPROPERTY(BlueprintAssignable)
+	FOnSwitchPosture OnSwitchPosture;
 
 private:
 	UPROPERTY(Transient)

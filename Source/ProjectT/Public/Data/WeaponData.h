@@ -19,4 +19,7 @@ struct PROJECTT_API FWeaponData
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	FWeaponStatData Stat;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UAnimMontage* Reload;
 };

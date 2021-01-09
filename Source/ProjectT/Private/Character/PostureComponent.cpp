@@ -27,6 +27,7 @@ void UPostureComponent::Initialize(const FPostureData* InPostureData)
 
 void UPostureComponent::SetPosture(EPostureState NewState)
 {
+	check(Owner->IsLocallyControlled());
 	if (bPostureSwitching || State == NewState || MovementComp->IsFalling()) return;
 
 	SetPostureImpl(NewState);
@@ -35,7 +36,7 @@ void UPostureComponent::SetPosture(EPostureState NewState)
 
 void UPostureComponent::SetSprint(bool bIsSprint)
 {
-	if (bIsSprinting == bIsSprint) return;
+	check(Owner->IsLocallyControlled());
 
 	SetSprintImpl(bIsSprint);
 	ServerSetSprint(bIsSprint);

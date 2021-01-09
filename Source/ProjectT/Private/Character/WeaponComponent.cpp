@@ -1,8 +1,14 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "Character/WeaponComponent.h"
+#include "Animation/AnimMontage.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Engine/World.h"
+#include "GameFramework/DamageType.h"
+#include "Net/UnrealNetwork.h"
+#include "TimerManager.h"
+#include "Character/PostureComponent.h"
+#include "Character/PTCharacter.h"
 #include "Data/WeaponData.h"
 #include "Library/PTStatics.h"
 
@@ -13,9 +19,18 @@ UWeaponComponent::UWeaponComponent()
 
 void UWeaponComponent::Initialize(const FWeaponData& WeaponData)
 {
+	Owner = Cast<APTCharacter>(GetOwner());
+
 	Stat = WeaponData.Stat;
+	ReloadAnim = WeaponData.Reload;
+
 	Spread = Stat.MinSpread;
-	check(Stat.ShotableMode & (1 << static_cast<uint8>(Stat.ShotMode)));
+	ShotMode = Stat.ShotMode;
+	
+	Clip = Stat.Clip;
+	Ammo = Stat.Ammo - Clip;
+	
+	check(Stat.ShotableMode & (1 << static_cast<uint8>(ShotMode)));
 
 	FPTStatics::AsyncLoad(WeaponData.Mesh, [this, WeaponData]
 	{
@@ -28,37 +43,77 @@ void UWeaponComponent::Initialize(const FWeaponData& WeaponData)
 
 void UWeaponComponent::StartFire()
 {
+	check(Owner->IsLocallyControlled());
+	if (bFiring || bReloading || Clip <= 0) return;
+	
+	if (!Owner->HasAuthority())
+		bFiring = true;
+	
+	Owner->GetPostureComp()->SetSprint(false);
 	ServerStartFire();
 }
 
 void UWeaponComponent::StopFire()
 {
+	check(Owner->IsLocallyControlled());
+	if (!bFiring || ShotMode != EShotMode::FullAuto) return;
+	
+	if (!Owner->HasAuthority())
+		bFiring = false;
+	
 	ServerStopFire();
 }
 
 void UWeaponComponent::StartAim()
 {
+	check(Owner->IsLocallyControlled());
+	if (bAiming) return;
+
+	if (!Owner->HasAuthority())
+		bAiming = true;
+	
 	ServerStartAim();
+	OnSwitchAim.Broadcast(true);
 }
 
 void UWeaponComponent::StopAim()
 {
+	check(Owner->IsLocallyControlled());
+	if (!bAiming) return;
+	
+	if (!Owner->HasAuthority())
+		bAiming = false;
+	
 	ServerStopAim();
+	OnSwitchAim.Broadcast(false);
 }
 
 void UWeaponComponent::Reload()
 {
+	check(Owner->IsLocallyControlled());
+	if (bReloading) return;
+
+	ReloadImpl();
 	ServerReload();
 }
 
-void UWeaponComponent::SetShotMode(EShotMode ShotMode)
+void UWeaponComponent::SetShotMode(EShotMode NewShotMode)
 {
-	if (Stat.ShotMode != ShotMode && Stat.ShotableMode & (1 << static_cast<uint8>(ShotMode)))
-		ServerSetShotMode(ShotMode);
+	check(Owner->IsLocallyControlled());
+
+	if (ShotMode != NewShotMode && Stat.ShotableMode & (1 << static_cast<uint8>(NewShotMode)))
+	{
+		ShotMode = NewShotMode;
+
+		if (!Owner->HasAuthority())
+			ServerSetShotMode(NewShotMode);
+	}
 }
 
 void UWeaponComponent::LevelUp(uint8 LevelInc)
 {
+	check(Owner->HasAuthority());
+
 	AdditionalDmg += Stat.DamageInc * LevelInc;
 	Stat.Distance += Stat.DistanceInc * LevelInc;
 	Stat.MaxDamageDistance += Stat.MaxDamageDistanceInc * LevelInc;
@@ -102,15 +157,15 @@ void UWeaponComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	if (GetOwner()->HasAuthority())
-		ServerStopAim_Implementation();
+	if (Owner->HasAuthority())
+		SetUnaimData();
 }
 
 void UWeaponComponent::TickComponent(float DeltaTime,
 	ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-	if (!GetOwner()->HasAuthority() || Delay <= 0.0f) return;
+	if (!Owner->HasAuthority() || Delay <= 0.0f) return;
 
 	if (bFiring)
 	{
@@ -121,59 +176,97 @@ void UWeaponComponent::TickComponent(float DeltaTime,
 	}
 	else
 	{
-		Spread = FMath::Max(Spread - (Stat.SpreadDec * DeltaTime), bAiming ? Stat.AimMinSpread : Stat.MinSpread);
+		Spread = FMath::Max(Spread - (Stat.SpreadDec * DeltaTime), MinSpread);
 		FireLag = FMath::Max(FireLag - DeltaTime, 0.0f);
 	}
 }
 
+void UWeaponComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME_CONDITION(UWeaponComponent, bFiring, COND_SkipOwner);
+	DOREPLIFETIME_CONDITION(UWeaponComponent, bAiming, COND_SkipOwner);
+}
+
 void UWeaponComponent::ServerStartFire_Implementation()
 {
-	if (bFiring) return;
-
-	const uint8 LeftBullets[3]{ 1, Stat.BulletInBurst, 0 };
-	LeftBullet = LeftBullets[static_cast<uint8>(Stat.ShotMode)];
+	const int32 MaxShot = Stat.Clip / Stat.BulletInShot;
+	const int32 LeftBullets[3]{ 1, FMath::Min(Stat.ShotInBurst, MaxShot), MaxShot };
+	ShotNum = LeftBullets[static_cast<uint8>(ShotMode)];
 	bFiring = true;
 }
 
 void UWeaponComponent::ServerStopFire_Implementation()
 {
-	if (Stat.ShotMode == EShotMode::FullAuto)
-		bFiring = false;
+	bFiring = false;
 }
 
-void UWeaponComponent::ServerStartAim_Implementation()
+void UWeaponComponent::MulticastReload_Implementation()
 {
-	UE_LOG(LogTemp, Log, TEXT("StartAim"));
-	SetAimData();
-}
-
-void UWeaponComponent::ServerStopAim_Implementation()
-{
-	UE_LOG(LogTemp, Log, TEXT("StopAim"));
-	SetUnaimData();
-}
-
-void UWeaponComponent::ServerReload_Implementation()
-{
-	UE_LOG(LogTemp, Log, TEXT("Reload"));
-	ServerStopAim_Implementation();
-	ServerStopFire_Implementation();
-}
-
-void UWeaponComponent::ServerSetShotMode_Implementation(EShotMode NewShotMode)
-{
-	UE_LOG(LogTemp, Log, TEXT("ShotMode: %d"), static_cast<uint8>(NewShotMode));
-	Stat.ShotMode = NewShotMode;
+	if (!Owner->IsLocallyControlled())
+		ReloadImpl();
 }
 
 void UWeaponComponent::Shot()
 {
-	UE_LOG(LogTemp, Log, TEXT("Shot!"));
+	FVector Dir = FRotationMatrix{ Owner->GetControlRotation() }.GetScaledAxis(EAxis::X);
+	Dir = FMath::VRandCone(Dir, Spread);
+
+	const FVector Start = Owner->GetPawnViewLocation();
+	const FVector End = Start + (Dir * Stat.Distance);
+
+	FCollisionQueryParams Params;
+	Params.AddIgnoredActor(Owner);
+
+	FHitResult Result;
+	if (GetWorld()->LineTraceSingleByProfile(Result, Start, End, BulletCollisionProfile.Name, Params))
+	{
+		if (Cast<APTCharacter>(Result.GetActor()))
+		{
+			const FVector2D InputRange{ Stat.MaxDamageDistance, Stat.Distance };
+			const FVector2D OutputRange{ Stat.MaxDamage, Stat.MinDamage };
+			const float Dist = FVector::Distance(Start, Result.ImpactPoint);
+			const float Damage = FMath::GetMappedRangeValueClamped(InputRange, OutputRange, Dist) + AdditionalDmg;
+
+			FPointDamageEvent DmgEvent{ Damage, Result, Dir, UDamageType::StaticClass() };
+			Result.GetActor()->TakeDamage(Damage, DmgEvent, Owner->GetController(), Owner);
+		}
+	}
+
 	Spread = FMath::Max(Spread + Stat.SpreadInc, MaxSpread);
 
-	if (Stat.ShotMode != EShotMode::FullAuto)
-		if (--LeftBullet == 0)
-			bFiring = false;
+	Stat.Clip -= Stat.BulletInShot;
+	UE_LOG(LogTemp, Log, TEXT("Clip : %d"), Stat.Clip);
+	if (--ShotNum > 0) return;
+
+	bFiring = false;
+	if (Stat.Clip <= 0) ClientReload();
+}
+
+void UWeaponComponent::ReloadImpl()
+{
+	const auto AddBullet = [this]
+	{
+		const int32 AddedBullet = FMath::Min(Stat.Clip - Clip, Ammo);
+		Ammo -= AddedBullet;
+		Clip += AddedBullet;
+	};
+
+	if (ReloadAnim && ReloadAnim->SequenceLength > 0.0f)
+	{
+		bReloading = true;
+		const float PlayRate = Stat.ReloadTime / ReloadAnim->SequenceLength;
+		Owner->PlayAnimMontage(ReloadAnim, PlayRate);
+
+		FTimerHandle Timer;
+		GetWorld()->GetTimerManager().SetTimer(Timer, [this, AddBullet]
+			{
+				AddBullet();
+				bReloading = false;
+			}, Stat.ReloadTime, false);
+	}
+	else AddBullet();
 }
 
 void UWeaponComponent::SetAimData()

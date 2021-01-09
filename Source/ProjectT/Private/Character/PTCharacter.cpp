@@ -19,6 +19,23 @@ APTCharacter::APTCharacter()
 	Level = 1u;
 }
 
+float APTCharacter::TakeDamage(float Damage, const FDamageEvent& DamageEvent,
+	AController* EventInstigator, AActor* DamageCauser)
+{
+	Damage = Super::TakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser);
+	if (Damage <= 0.0f) return 0.0f;
+
+	Health = FMath::Max(Health - Damage, 0.0f);
+	if (Health == 0.0f) Death();
+
+	return Damage;
+}
+
+FVector APTCharacter::GetPawnViewLocation() const
+{
+	return GetMesh()->GetSocketLocation(TEXT("ViewPoint"));;
+}
+
 void APTCharacter::Heal(float Value)
 {
 	check(HasAuthority());
@@ -68,23 +85,6 @@ void APTCharacter::BeginPlay()
 
 	Health = Stat.Health;
 	CurMaxExp = MaxExp;
-}
-
-float APTCharacter::TakeDamage(float Damage, const FDamageEvent& DamageEvent,
-	AController* EventInstigator, AActor* DamageCauser)
-{
-	Damage = Super::TakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser);
-	if (Damage <= 0.0f) return 0.0f;
-
-	Health = FMath::Max(Health - Damage, 0.0f);
-	if (Health == 0.0f) Death();
-
-	return Damage;
-}
-
-FVector APTCharacter::GetPawnViewLocation() const
-{
-	return GetMesh()->GetSocketLocation(TEXT("ViewPoint"));;
 }
 
 void APTCharacter::Initialize()

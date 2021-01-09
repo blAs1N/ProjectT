@@ -18,6 +18,11 @@ class PROJECTT_API APTCharacter final : public ACharacter
 public:
 	APTCharacter();
 
+	float TakeDamage(float Damage, const FDamageEvent& DamageEvent,
+		AController* EventInstigator, AActor* DamageCauser) override;
+
+	FVector GetPawnViewLocation() const override;
+
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly)
 	void Heal(float Value);
 
@@ -35,11 +40,6 @@ private:
 
 	void PostInitializeComponents() override;
 	void BeginPlay() override;
-
-	float TakeDamage(float Damage, const FDamageEvent& DamageEvent,
-		AController* EventInstigator, AActor* DamageCauser) override;
-
-	FVector GetPawnViewLocation() const override;
 
 	void Initialize();
 	void Death();

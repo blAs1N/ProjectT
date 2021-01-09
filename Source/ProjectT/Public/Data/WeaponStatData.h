@@ -126,14 +126,14 @@ struct PROJECTT_API FWeaponStatData
 	float ReloadTimeDec;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	uint8 Clip;
+	int32 Clip;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	uint8 Ammo;
+	int32 Ammo;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	uint8 BulletInShot;
+	int32 BulletInShot;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	uint8 ShotInBurst;
+	int32 ShotInBurst;
 };

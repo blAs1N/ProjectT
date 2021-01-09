@@ -106,5 +106,6 @@ void APTCharacter::Initialize()
 
 void APTCharacter::Death()
 {
-
+	// Temp
+	Destroy();
 }

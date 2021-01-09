@@ -60,7 +60,7 @@ public:
 
 private:
 	UPROPERTY(Transient)
-	class ACharacter* CharacterOwner;
+	class APTCharacter* Owner;
 
 	UPROPERTY(Transient)
 	class UCapsuleComponent* CapsuleComp;

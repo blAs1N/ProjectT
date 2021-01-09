@@ -3,10 +3,11 @@
 #include "Character/PostureComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/SkeletalMeshComponent.h"
-#include "GameFramework/Character.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Net/UnrealNetwork.h"
 #include "TimerManager.h"
+#include "Character/PTCharacter.h"
+#include "Character/WeaponComponent.h"
 #include "Data/PostureData.h"
 
 UPostureComponent::UPostureComponent()
@@ -16,9 +17,9 @@ UPostureComponent::UPostureComponent()
 
 void UPostureComponent::Initialize(const FPostureData* InPostureData)
 {
-	CharacterOwner = Cast<ACharacter>(GetOwner());
-	CapsuleComp = CharacterOwner->GetCapsuleComponent();
-	MovementComp = CharacterOwner->GetCharacterMovement();
+	Owner = Cast<APTCharacter>(GetOwner());
+	CapsuleComp = Owner->GetCapsuleComponent();
+	MovementComp = Owner->GetCharacterMovement();
 
 	PostureData = InPostureData;
 	SetPostureData(EPostureState::Stand);
@@ -42,13 +43,13 @@ void UPostureComponent::SetSprint(bool bIsSprint)
 
 void UPostureComponent::MulticastSetPosture_Implementation(EPostureState NewState)
 {
-	if (!CharacterOwner->IsLocallyControlled())
+	if (!Owner->IsLocallyControlled())
 		SetPostureImpl(NewState);
 }
 
 void UPostureComponent::MulticastSetSprint_Implementation(bool bIsSprint)
 {
-	if (!CharacterOwner->IsLocallyControlled())
+	if (!Owner->IsLocallyControlled())
 		SetSprintImpl(bIsSprint);
 }
 
@@ -66,7 +67,7 @@ void UPostureComponent::SetPostureImpl(EPostureState NewState)
 		uint8 To = static_cast<uint8>(State);
 		if (From < To) --To;
 
-		const float Delay = CharacterOwner->PlayAnimMontage
+		const float Delay = Owner->PlayAnimMontage
 			((&PostureData->PostureSwitchAnims.StandToCrouch)[From * 2 + To]);
 
 		const float PrevSpeed = MovementComp->MaxWalkSpeed;
@@ -99,16 +100,16 @@ void UPostureComponent::SetPostureData(EPostureState NewState)
 	const FPostureData& Data = GetPostureData();
 	const FPostureStat Stat = (&Data.StandData)[static_cast<uint8>(State)];
 	const float Offset = Data.StandData.HalfHeight - Stat.HalfHeight + Stat.MeshOffset;
-	const float ScaleZ = CharacterOwner->GetActorScale().Z;
+	const float ScaleZ = Owner->GetActorScale().Z;
 
-	CharacterOwner->OnStartCrouch(Offset, Offset * ScaleZ);
-	CharacterOwner->GetMesh()->UpdateComponentToWorld();
+	Owner->OnStartCrouch(Offset, Offset * ScaleZ);
+	Owner->GetMesh()->UpdateComponentToWorld();
 
-	if (CharacterOwner->GetLocalRole() != ROLE_SimulatedProxy)
+	if (Owner->GetLocalRole() != ROLE_SimulatedProxy)
 	{
-		CharacterOwner->AddActorWorldOffset({ 0.f, 0.0f, (Stat.HalfHeight - CapsuleComp->GetUnscaledCapsuleHalfHeight()) * ScaleZ });
+		Owner->AddActorWorldOffset({ 0.f, 0.0f, (Stat.HalfHeight - CapsuleComp->GetUnscaledCapsuleHalfHeight()) * ScaleZ });
 	}
-	else if (auto ClientData = CharacterOwner->GetCharacterMovement()->GetPredictionData_Client_Character())
+	else if (auto ClientData = Owner->GetCharacterMovement()->GetPredictionData_Client_Character())
 	{
 		ClientData->MeshTranslationOffset = FVector::ZeroVector;
 		ClientData->OriginalMeshTranslationOffset = FVector::ZeroVector;

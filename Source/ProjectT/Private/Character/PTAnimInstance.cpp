@@ -15,10 +15,12 @@ void UPTAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 	const auto* Posture = Owner->GetPostureComp();
 	State = Posture->GetPostureState();
 
-	bIsSpinting = !Velocity.IsZero() && Posture->IsSprinting();
-	bIsFalling = Owner->GetCharacterMovement()->IsFalling();
 	bNeedFABRIK = !(Owner->GetWeaponComp()->IsReloading()
 		|| Owner->GetPostureComp()->IsPostureSwitching());
+
+	bIsSpinting = !Velocity.IsZero() && Posture->IsSprinting();
+	bIsFalling = Owner->GetCharacterMovement()->IsFalling();
+	bIsAiming = Owner->GetWeaponComp()->IsAiming();
 
 	const float MaxSpeed = Owner->GetCharacterMovement()->MaxWalkSpeed;
 	Speed = Velocity.Size2D() / MaxSpeed;

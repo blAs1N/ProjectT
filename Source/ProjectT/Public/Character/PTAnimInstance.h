@@ -39,4 +39,7 @@ private:
 
 	UPROPERTY(Transient, VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
 	uint8 bIsFalling : 1;
+
+	UPROPERTY(Transient, VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
+	uint8 bIsAiming : 1;
 };

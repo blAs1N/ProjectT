@@ -15,9 +15,6 @@ void UPTAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 	const auto* Posture = Owner->GetPostureComp();
 	State = Posture->GetPostureState();
 
-	bNeedFABRIK = !(Owner->GetWeaponComp()->IsReloading()
-		|| Owner->GetPostureComp()->IsPostureSwitching());
-
 	bIsSpinting = !Velocity.IsZero() && Posture->IsSprinting();
 	bIsFalling = Owner->GetCharacterMovement()->IsFalling();
 	bIsAiming = Owner->GetWeaponComp()->IsAiming();

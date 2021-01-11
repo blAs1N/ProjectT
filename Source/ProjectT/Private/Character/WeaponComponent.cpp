@@ -4,6 +4,7 @@
 #include "Animation/AnimMontage.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Engine/World.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/DamageType.h"
 #include "Net/UnrealNetwork.h"
 #include "TimerManager.h"
@@ -67,7 +68,7 @@ void UWeaponComponent::StopFire()
 void UWeaponComponent::StartAim()
 {
 	check(Owner->IsLocallyControlled());
-	if (bAiming) return;
+	if (bAiming || Owner->GetCharacterMovement()->IsFalling()) return;
 
 	if (!Owner->HasAuthority())
 		bAiming = true;

@@ -37,7 +37,10 @@ void UPostureComponent::SetPosture(EPostureState NewState)
 void UPostureComponent::SetSprint(bool bIsSprint)
 {
 	check(Owner->IsLocallyControlled());
-	if (bIsSprinting == bIsSprint || (bIsSprint && Owner->GetWeaponComp()->IsFiring())) return;
+	if (bIsSprinting == bIsSprint) return;
+	
+	if (bIsSprint && (Owner->GetCharacterMovement()->IsFalling() || Owner->GetWeaponComp()->IsFiring()))
+			return;
 
 	SetSprintImpl(bIsSprint);
 	ServerSetSprint(bIsSprint);

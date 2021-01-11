@@ -12,4 +12,5 @@ enum class EShotMode : uint8
 	Single,
 	Burst,
 	FullAuto,
+	Max UMETA(Hidden)
 };

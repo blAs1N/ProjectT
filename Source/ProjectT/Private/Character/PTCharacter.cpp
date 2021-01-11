@@ -87,6 +87,12 @@ void APTCharacter::BeginPlay()
 	CurMaxExp = MaxExp;
 }
 
+bool APTCharacter::CanJumpInternal_Implementation() const
+{
+	return Super::CanJumpInternal_Implementation() && !WeaponComp->IsAiming() &&
+		!PostureComp->IsPostureSwitching() && PostureComp->GetPostureState() == EPostureState::Stand;
+}
+
 void APTCharacter::Initialize()
 {
 	static const FCharacterData DefaultData{};

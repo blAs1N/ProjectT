@@ -40,6 +40,7 @@ private:
 
 	void PostInitializeComponents() override;
 	void BeginPlay() override;
+	bool CanJumpInternal_Implementation() const override;
 
 	void Initialize();
 	void Death();

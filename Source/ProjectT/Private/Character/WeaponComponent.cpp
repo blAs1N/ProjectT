@@ -110,6 +110,14 @@ void UWeaponComponent::SetShotMode(EShotMode NewShotMode)
 	}
 }
 
+void UWeaponComponent::SetNextShotMode()
+{
+	uint8 NewShotMode = static_cast<uint8>(ShotMode) + 1;
+	while (!(Stat.ShotableMode & (1 << static_cast<uint8>(NewShotMode))))
+		NewShotMode = (NewShotMode + 1) % static_cast<uint8>(EShotMode::Max);
+	SetShotMode(static_cast<EShotMode>(NewShotMode));
+}
+
 void UWeaponComponent::LevelUp(uint8 LevelInc)
 {
 	check(Owner->HasAuthority());

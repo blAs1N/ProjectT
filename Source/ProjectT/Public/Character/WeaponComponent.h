@@ -38,11 +38,10 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void SetShotMode(EShotMode NewShotMode);
 
+	UFUNCTION(BlueprintCallable)
+	void SetNextShotMode();
+
 	void LevelUp(uint8 LevelInc);
-
-
-	UFUNCTION(BlueprintCallable, BlueprintPure, meta = (CompactNodeTitle = "ShotableMode"))
-	FORCEINLINE int32 GetShotableModes() const noexcept { return Stat.ShotableMode; }
 
 	FORCEINLINE EShotMode GetShotMode() const noexcept { return ShotMode; }
 	FORCEINLINE uint8 GetClip() const noexcept { return Stat.Clip; }

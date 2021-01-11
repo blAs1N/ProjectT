@@ -63,6 +63,9 @@ private:
 	class APTCharacter* Owner;
 
 	UPROPERTY(Transient)
+	class UWeaponComponent* WeaponComp;
+
+	UPROPERTY(Transient)
 	class UCapsuleComponent* CapsuleComp;
 
 	UPROPERTY(Transient)

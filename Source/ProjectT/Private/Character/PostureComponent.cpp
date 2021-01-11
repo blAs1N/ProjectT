@@ -18,6 +18,7 @@ UPostureComponent::UPostureComponent()
 void UPostureComponent::Initialize(const FPostureData* InPostureData)
 {
 	Owner = Cast<APTCharacter>(GetOwner());
+	WeaponComp = Owner->GetWeaponComp();
 	CapsuleComp = Owner->GetCapsuleComponent();
 	MovementComp = Owner->GetCharacterMovement();
 
@@ -39,7 +40,7 @@ void UPostureComponent::SetSprint(bool bIsSprint)
 	check(Owner->IsLocallyControlled());
 	if (bIsSprinting == bIsSprint) return;
 	
-	if (bIsSprint && (Owner->GetCharacterMovement()->IsFalling() || Owner->GetWeaponComp()->IsFiring()))
+	if (bIsSprint && (Owner->GetCharacterMovement()->IsFalling() || WeaponComp->IsFiring()))
 			return;
 
 	SetSprintImpl(bIsSprint);

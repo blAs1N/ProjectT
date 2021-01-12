@@ -68,7 +68,7 @@ void UWeaponComponent::StopFire()
 void UWeaponComponent::StartAim()
 {
 	check(Owner->IsLocallyControlled());
-	if (bAiming || Owner->GetCharacterMovement()->IsFalling()) return;
+	if (bAiming || bReloading || Owner->GetCharacterMovement()->IsFalling()) return;
 
 	if (!Owner->HasAuthority())
 		bAiming = true;

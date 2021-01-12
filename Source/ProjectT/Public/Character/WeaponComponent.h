@@ -107,6 +107,7 @@ private:
 	void SetUnaimData();
 
 public:
+	UPROPERTY(BlueprintAssignable)
 	FOnSwitchAim OnSwitchAim; // Client-only Delegate
 
 private:

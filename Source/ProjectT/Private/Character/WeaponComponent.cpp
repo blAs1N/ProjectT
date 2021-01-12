@@ -94,6 +94,8 @@ void UWeaponComponent::Reload()
 	check(Owner->IsLocallyControlled());
 	if (bReloading) return;
 
+	StopAim();
+	StopFire();
 	ReloadImpl();
 	ServerReload();
 }

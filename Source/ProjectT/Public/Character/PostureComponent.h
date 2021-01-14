@@ -29,6 +29,9 @@ public:
 	FORCEINLINE bool IsSprinting() const noexcept { return bIsSprinting; }
 
 private:
+	void TickComponent(float DeltaTime, ELevelTick TickType,
+		FActorComponentTickFunction* ThisTickFunction);
+
 	UFUNCTION(Server, Reliable, WithValidation)
 	void ServerSetPosture(EPostureState NewState);
 
@@ -81,4 +84,6 @@ private:
 
 	UPROPERTY(Transient, VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
 	uint8 bIsSprinting : 1;
+
+	uint8 bSprintMode : 1;
 };

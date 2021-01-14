@@ -13,6 +13,9 @@
 UPostureComponent::UPostureComponent()
 {
 	SetIsReplicatedByDefault(true);
+	
+	PrimaryComponentTick.bCanEverTick = true;
+	PrimaryComponentTick.bStartWithTickEnabled = true;
 }
 
 void UPostureComponent::Initialize(const FPostureData* InPostureData)
@@ -38,13 +41,31 @@ void UPostureComponent::SetPosture(EPostureState NewState)
 void UPostureComponent::SetSprint(bool bIsSprint)
 {
 	check(Owner->IsLocallyControlled());
-	if (bIsSprinting == bIsSprint) return;
+	if (bSprintMode == bIsSprint) return;
 	
 	if (bIsSprint && (Owner->GetCharacterMovement()->IsFalling() || WeaponComp->IsFiring()))
 			return;
 
 	SetSprintImpl(bIsSprint);
 	ServerSetSprint(bIsSprint);
+}
+
+void UPostureComponent::TickComponent(float DeltaTime,
+	ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+{
+	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+	if (!Owner) return;
+
+	const FVector CurAcc = MovementComp->GetCurrentAcceleration();
+	FRotator DeltaRot = CurAcc.Rotation() - Owner->GetActorRotation();
+	DeltaRot.Normalize();
+
+	bIsSprinting = bSprintMode && FMath::Abs(DeltaRot.Yaw) <= 50.0f
+		&& CurAcc.Size() / MovementComp->GetMaxAcceleration();
+
+	const FPostureData& Data = GetPostureData();
+	const float Ratio = bIsSprinting ? Data.SprintSpeedRatio : Data.StandData.SpeedRatio;
+	MovementComp->MaxWalkSpeed = Data.DefaultWalkSpeed * Ratio;
 }
 
 void UPostureComponent::MulticastSetPosture_Implementation(EPostureState NewState)
@@ -61,7 +82,7 @@ void UPostureComponent::MulticastSetSprint_Implementation(bool bIsSprint)
 
 void UPostureComponent::SetPostureImpl(EPostureState NewState)
 {
-	if (NewState != EPostureState::Stand && bIsSprinting)
+	if (NewState != EPostureState::Stand && bSprintMode)
 		SetSprintImpl(false);
 
 	const EPostureState PrevState = State;
@@ -93,11 +114,8 @@ void UPostureComponent::SetSprintImpl(bool bIsSprint)
 {
 	if (bIsSprint && State != EPostureState::Stand)
 		SetPostureImpl(EPostureState::Stand);
-	
-	const FPostureData& Data = GetPostureData();
-	const float Ratio = bIsSprint ? Data.SprintSpeedRatio : Data.StandData.SpeedRatio;
-	MovementComp->MaxWalkSpeed = Data.DefaultWalkSpeed * Ratio;
-	bIsSprinting = bIsSprint;
+
+	bSprintMode = bIsSprint;
 }
 
 void UPostureComponent::SetPostureData(EPostureState NewState)

@@ -10,21 +10,35 @@ void UPTAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 {
 	const auto* Owner = Cast<APTCharacter>(TryGetPawnOwner());
 	if (!Owner) return;
+	
+	float CurSpineYaw = 0.0f;
+	FVector Velocity = Owner->GetVelocity();
+	Velocity.Z = 0.0f;
 
-	const FVector Velocity = Owner->GetVelocity();
+	if (!Velocity.IsNearlyZero(JogCriterion))
+	{
+		FRotator DeltaRot = Velocity.Rotation() - Owner->GetActorRotation();
+		DeltaRot.Normalize();
+		
+		CurSpineYaw = FMath::Sin(FMath::DegreesToRadians(DeltaRot.Yaw)) * RotationScale;
+
+		Direction = FMath::Abs(DeltaRot.Yaw) <= 100.0f
+			? EDirection::Forward : EDirection::Backward;
+
+		if (Direction == EDirection::Backward)
+			CurSpineYaw *= -1.0f;
+	}
+	else Direction = EDirection::Idle;
+
+	SpineYaw = FMath::Lerp(SpineYaw, CurSpineYaw, DeltaSeconds * RotationSpeed);
+
+	const FRotator AimRot = (Owner->GetBaseAimRotation() - Owner->GetActorRotation()).GetNormalized();;
+	AimPitch = AimRot.Pitch; AimYaw = AimRot.Yaw;
+
 	const auto* Posture = Owner->GetPostureComp();
 	State = Posture->GetPostureState();
 
-	bIsSpinting = !Velocity.IsZero() && Posture->IsSprinting();
+	bIsSpinting = Posture->IsSprinting();
 	bIsFalling = Owner->GetCharacterMovement()->IsFalling();
 	bIsAiming = Owner->GetWeaponComp()->IsAiming();
-
-	const float MaxSpeed = Owner->GetCharacterMovement()->MaxWalkSpeed;
-	Speed = Velocity.Size2D() / MaxSpeed;
-	
-	const FRotator Rotation = Owner->GetActorRotation();
-	Direction = CalculateDirection(Velocity, Rotation);
-
-	const FRotator AimRot = (Owner->GetBaseAimRotation() - Rotation).GetNormalized();;
-	AimPitch = AimRot.Pitch; AimYaw = AimRot.Yaw;
-}
+} 

@@ -3,6 +3,7 @@
 #include "Character/PTCharacter.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/SkeletalMeshComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "UObject/ConstructorHelpers.h"
 #include "Character/PostureComponent.h"
 #include "Character/WeaponComponent.h"
@@ -16,6 +17,7 @@ APTCharacter::APTCharacter()
 	PostureComp = CreateDefaultSubobject<UPostureComponent>(TEXT("Posture"));
 	WeaponComp = CreateDefaultSubobject<UWeaponComponent>(TEXT("Weapon"));
 	WeaponComp->SetupAttachment(GetMesh());
+	bUseControllerRotationYaw = false;
 	Level = 1u;
 }
 

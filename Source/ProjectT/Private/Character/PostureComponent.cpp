@@ -59,6 +59,8 @@ void UPostureComponent::TickComponent(float DeltaTime,
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 	if (!Owner) return;
 
+	if (State != EPostureState::Stand) return;
+
 	const FVector CurAcc = MovementComp->GetCurrentAcceleration();
 	FRotator DeltaRot = CurAcc.Rotation() - Owner->GetActorRotation();
 	DeltaRot.Normalize();

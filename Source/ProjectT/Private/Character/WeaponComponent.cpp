@@ -70,6 +70,9 @@ void UWeaponComponent::StartAim()
 	check(Owner->IsLocallyControlled());
 	if (bAiming || bReloading || Owner->GetCharacterMovement()->IsFalling()) return;
 
+	if (Owner->GetPostureComp()->IsSprinting())
+		Owner->GetPostureComp()->SetSprint(false);
+
 	if (!Owner->HasAuthority())
 		bAiming = true;
 	

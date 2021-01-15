@@ -44,7 +44,10 @@ void UPostureComponent::SetSprint(bool bIsSprint)
 	if (bSprintMode == bIsSprint) return;
 	
 	if (bIsSprint && (Owner->GetCharacterMovement()->IsFalling() || WeaponComp->IsFiring()))
-			return;
+		return;
+
+	if (bIsSprint && WeaponComp->IsAiming())
+		WeaponComp->StopAim();
 
 	SetSprintImpl(bIsSprint);
 	ServerSetSprint(bIsSprint);

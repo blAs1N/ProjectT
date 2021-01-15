@@ -16,6 +16,7 @@
 UWeaponComponent::UWeaponComponent()
 {
 	SetIsReplicatedByDefault(true);
+	SetCollisionProfileName(TEXT("Weapon"));
 }
 
 void UWeaponComponent::Initialize(const FWeaponData& WeaponData)

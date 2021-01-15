@@ -13,7 +13,7 @@
 APTCharacter::APTCharacter()
 {
 	bAlwaysRelevant = true;
-	
+
 	PostureComp = CreateDefaultSubobject<UPostureComponent>(TEXT("Posture"));
 	WeaponComp = CreateDefaultSubobject<UWeaponComponent>(TEXT("Weapon"));
 	WeaponComp->SetupAttachment(GetMesh());
@@ -31,11 +31,6 @@ float APTCharacter::TakeDamage(float Damage, const FDamageEvent& DamageEvent,
 	if (Health == 0.0f) Death();
 
 	return Damage;
-}
-
-FVector APTCharacter::GetPawnViewLocation() const
-{
-	return GetMesh()->GetSocketLocation(TEXT("ViewPoint"));;
 }
 
 void APTCharacter::Heal(float Value)

@@ -102,14 +102,13 @@ void UPostureComponent::SetPostureImpl(EPostureState NewState)
 		const float Delay = Owner->PlayAnimMontage
 			((&PostureData->PostureSwitchAnims.StandToCrouch)[From * 2 + To]);
 
-		const float PrevSpeed = MovementComp->MaxWalkSpeed;
-		MovementComp->MaxWalkSpeed = 0.0f;
+		MovementComp->DisableMovement();
 		bPostureSwitching = true;
 
 		FTimerHandle DelayTimer;
-		GetWorld()->GetTimerManager().SetTimer(DelayTimer, [this, PrevSpeed]
+		GetWorld()->GetTimerManager().SetTimer(DelayTimer, [this]
 			{
-				MovementComp->MaxWalkSpeed = PrevSpeed;
+				MovementComp->SetDefaultMovementMode();
 				bPostureSwitching = false;
 			}, Delay, false);
 	}

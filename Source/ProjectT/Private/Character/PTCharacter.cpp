@@ -128,4 +128,17 @@ void APTCharacter::Death()
 {
 	// Temp
 	Destroy();
+void APTCharacter::MulticastDeath_Implementation()
+{
+	if (IsLocallyControlled())
+		DisableInput(nullptr);
+
+	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	GetMesh()->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
+	
+	WeaponComp->SetSimulatePhysics(true);
+	GetMesh()->SetSimulatePhysics(true);
+
+	WeaponComp->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
+	OnDeath.Broadcast();
 }

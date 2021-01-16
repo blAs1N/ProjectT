@@ -33,8 +33,17 @@ float APTCharacter::TakeDamage(float Damage, const FDamageEvent& DamageEvent,
 	Damage = Super::TakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser);
 	if (Damage <= 0.0f) return 0.0f;
 
-	Health = FMath::Max(Health - Damage, 0.0f);
-	if (Health == 0.0f) Death();
+	Health -= Damage;
+	
+	if (Health > 0.0f)
+	{
+		MulticastOnTakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser);
+	}
+	else
+	{
+		Health = 0.0f;
+		MulticastDeath();
+	}
 
 	return Damage;
 }

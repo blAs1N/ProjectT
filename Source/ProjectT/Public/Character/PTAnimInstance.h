@@ -23,6 +23,12 @@ private:
 	
 protected:
 	UPROPERTY(EditAnywhere)
+	FName WeaponIKName;
+
+	UPROPERTY(EditAnywhere)
+	FName RightHandName;
+	
+	UPROPERTY(EditAnywhere)
 	float JogCriterion;
 
 	UPROPERTY(EditAnywhere)
@@ -32,6 +38,9 @@ protected:
 	float RotationSpeed;
 
 private:
+	UPROPERTY(Transient, VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
+	FTransform LeftHandIK;
+
 	UPROPERTY(Transient, VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
 	float SpineYaw;
 
@@ -55,4 +64,7 @@ private:
 
 	UPROPERTY(Transient, VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
 	uint8 bIsAiming : 1;
+
+	UPROPERTY(Transient, VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
+	uint8 bNeedIK : 1;
 };

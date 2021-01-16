@@ -11,6 +11,22 @@ void UPTAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 	const auto* Owner = Cast<APTCharacter>(TryGetPawnOwner());
 	if (!Owner) return;
 	
+	bNeedIK = !Owner->GetWeaponComp()->IsReloading();
+	if (bNeedIK)
+	{
+		const auto LeftHand = Owner->GetWeaponComp()->GetSocketTransform(WeaponIKName);
+		FVector IKLoc;	FRotator IKRot;
+		Owner->GetMesh()->TransformToBoneSpace(RightHandName,
+			LeftHand.GetLocation(), LeftHand.GetRotation().Rotator(), IKLoc, IKRot);
+
+		LeftHandIK.SetLocation(IKLoc);
+		LeftHandIK.SetRotation(IKRot.Quaternion());
+
+		float CurSpineYaw = 0.0f;
+		FVector Velocity = Owner->GetVelocity();
+		Velocity.Z = 0.0f;
+	}
+
 	float CurSpineYaw = 0.0f;
 	FVector Velocity = Owner->GetVelocity();
 	Velocity.Z = 0.0f;

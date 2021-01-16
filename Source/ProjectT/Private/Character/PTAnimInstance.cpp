@@ -11,7 +11,7 @@ void UPTAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 	const auto* Owner = Cast<APTCharacter>(TryGetPawnOwner());
 	if (!Owner) return;
 	
-	bNeedIK = !Owner->GetWeaponComp()->IsReloading();
+	bNeedIK = !Owner->IsDeath() && !Owner->GetWeaponComp()->IsReloading();
 	if (bNeedIK)
 	{
 		const auto LeftHand = Owner->GetWeaponComp()->GetSocketTransform(WeaponIKName);

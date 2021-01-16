@@ -29,6 +29,7 @@ public:
 
 	FORCEINLINE class UWeaponComponent* GetWeaponComp() const noexcept { return WeaponComp; }
 	FORCEINLINE class UPostureComponent* GetPostureComp() const noexcept { return PostureComp; }
+	FORCEINLINE class UStaticMeshComponent* GetSightComp() const noexcept { return SightComp; }
 	FORCEINLINE bool IsDeath() const noexcept { return bIsDeath; }
 
 private:
@@ -53,15 +54,21 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
 	UPostureComponent* PostureComp;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
+	UStaticMeshComponent* SightComp;
+
 	UPROPERTY(EditAnywhere, meta = (AllowPrivateAccess = true))
 	FDataTableRowHandle CharacterKey;
+
+	UPROPERTY(EditAnywhere, meta = (AllowPrivateAccess = true))
+	FName SightSocketName;
 
 	FStatData Stat;
 
 	float Health;
 	float CurExp;
 	float CurMaxExp;
-	
+
 	UPROPERTY(EditDefaultsOnly, meta = (AllowPrivateAccess = true))
 	float MaxExp;
 

@@ -3,6 +3,7 @@
 #include "Character/PTCharacter.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/SkeletalMeshComponent.h"
+#include "Components/StaticMeshComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "UObject/ConstructorHelpers.h"
 #include "Character/PostureComponent.h"
@@ -11,12 +12,17 @@
 #include "Library/PTStatics.h"
 
 APTCharacter::APTCharacter()
+	: Super()
 {
 	bAlwaysRelevant = true;
 
 	PostureComp = CreateDefaultSubobject<UPostureComponent>(TEXT("Posture"));
 	WeaponComp = CreateDefaultSubobject<UWeaponComponent>(TEXT("Weapon"));
 	WeaponComp->SetupAttachment(GetMesh());
+
+	SightComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Sight"));
+	SightComp->SetupAttachment(WeaponComp);
+
 	bUseControllerRotationYaw = false;
 	Level = 1u;
 }
@@ -105,6 +111,8 @@ void APTCharacter::Initialize()
 	Stat = Data->StatData;
 	PostureComp->Initialize(&Data->PostureData);
 	WeaponComp->Initialize(Data->WeaponData);
+
+	SightComp->AttachToComponent(WeaponComp, FAttachmentTransformRules::SnapToTargetIncludingScale, SightSocketName);
 }
 
 void APTCharacter::Death()

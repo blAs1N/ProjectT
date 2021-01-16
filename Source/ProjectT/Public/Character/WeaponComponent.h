@@ -111,8 +111,6 @@ public:
 	FOnSwitchAim OnSwitchAim; // Client-only Delegate
 
 private:
-	FWeaponStatData Stat;
-	
 	UPROPERTY(Transient)
 	class APTCharacter* Owner;
 
@@ -121,6 +119,8 @@ private:
 
 	UPROPERTY(EditAnywhere, meta = (AllowPrivate = true))
 	FCollisionProfileName BulletCollisionProfile;
+
+	FWeaponStatData Stat;
 
 	FVector2D MinRecoil;
 	FVector2D MaxRecoil;

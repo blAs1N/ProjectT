@@ -48,6 +48,11 @@ float APTCharacter::TakeDamage(float Damage, const FDamageEvent& DamageEvent,
 	return Damage;
 }
 
+void APTCharacter::GetActorEyesViewPoint(FVector& Location, FRotator& Rotation) const
+{
+	GetActorViewPoint(Location, Rotation);
+}
+
 void APTCharacter::Heal(float Value)
 {
 	check(HasAuthority());
@@ -141,4 +146,9 @@ void APTCharacter::MulticastDeath_Implementation()
 
 	WeaponComp->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
 	OnDeath.Broadcast();
+}
+
+void APTCharacter::GetActorViewPoint_Implementation(FVector& Location, FRotator& Rotation) const
+{
+	Super::GetActorEyesViewPoint(Location, Rotation);
 }

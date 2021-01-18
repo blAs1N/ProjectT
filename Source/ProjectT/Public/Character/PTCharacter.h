@@ -21,6 +21,8 @@ public:
 	float TakeDamage(float Damage, const FDamageEvent& DamageEvent,
 		AController* EventInstigator, AActor* DamageCauser) override;
 
+	void GetActorEyesViewPoint(FVector& Location, FRotator& Rotation) const override;
+
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly)
 	void Heal(float Value);
 
@@ -31,6 +33,10 @@ public:
 	FORCEINLINE class UPostureComponent* GetPostureComp() const noexcept { return PostureComp; }
 	FORCEINLINE class UStaticMeshComponent* GetSightComp() const noexcept { return SightComp; }
 	FORCEINLINE bool IsDeath() const noexcept { return bIsDeath; }
+
+protected:
+	UFUNCTION(BlueprintNativeEvent)
+	void GetActorViewPoint(FVector& Location, FRotator& Rotation) const;
 
 private:
 #if WITH_EDITOR

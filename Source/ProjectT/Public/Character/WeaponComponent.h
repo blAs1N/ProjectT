@@ -81,7 +81,7 @@ private:
 	void MulticastReload();
 
 	UFUNCTION(Client, Reliable)
-	void ClientReload();
+	void ClientStopShot(uint8 LeftClip);
 
 	FORCEINLINE bool ServerStartFire_Validate() const noexcept { return !bFiring; }
 	FORCEINLINE bool ServerStopFire_Validate() const noexcept { return true; }
@@ -95,9 +95,10 @@ private:
 	FORCEINLINE void ServerReload_Implementation() { return MulticastReload(); }
 	FORCEINLINE bool ServerReload_Validate() const noexcept { return true; }
 
-	void ServerSetShotMode_Implementation(EShotMode NewShotMode) { ShotMode = NewShotMode; }
+	FORCEINLINE void ServerSetShotMode_Implementation(EShotMode NewShotMode) { ShotMode = NewShotMode; }
 	FORCEINLINE bool ServerSetShotMode_Validate(EShotMode NewShotMode) const noexcept { return true; }
 
+	FORCEINLINE void ClientEndShoot_Implementation() { bFiring = false; }
 	FORCEINLINE void ClientReload_Implementation() { Reload(); }
 
 	void Shot();
@@ -117,10 +118,16 @@ private:
 	UPROPERTY(Transient)
 	UAnimMontage* ReloadAnim;
 
-	UPROPERTY(EditAnywhere, meta = (AllowPrivate = true))
+	FWeaponStatData Stat;
+
+	UPROPERTY(EditDefaultsOnly, meta = (AllowPrivateAccess = true))
 	FCollisionProfileName BulletCollisionProfile;
 
-	FWeaponStatData Stat;
+	UPROPERTY(EditDefaultsOnly, meta = (AllowPrivateAccess = true))
+	FName MuzzleSocket;
+
+	UPROPERTY(EditDefaultsOnly, meta = (AllowPrivateAccess = true))
+	FName AimEndSocket;
 
 	FVector2D MinRecoil;
 	FVector2D MaxRecoil;

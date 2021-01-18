@@ -224,13 +224,43 @@ void UWeaponComponent::MulticastReload_Implementation()
 		ReloadImpl();
 }
 
+void UWeaponComponent::ClientStopShot_Implementation(uint8 LeftClip)
+{
+	if (LeftClip > 0)
+		bFiring = false;
+	else
+		Reload();
+}
+
 void UWeaponComponent::Shot()
 {
-	FVector Dir = FRotationMatrix{ Owner->GetControlRotation() }.GetScaledAxis(EAxis::X);
-	Dir = FMath::VRandCone(Dir, Spread);
+		
+	FVector Loc;  FRotator Rot;
+	Owner->GetActorEyesViewPoint(Loc, Rot);
 
-	const FVector Start = Owner->GetPawnViewLocation();
-	const FVector End = Start + (Dir * Stat.Distance);
+	FVector Start, End, Dir;
+
+	if (bAiming)
+	{
+		Start = Loc;
+		
+		Dir = GetSocketLocation(AimEndSocket) - Start;
+		Dir = FMath::VRandCone(Dir.GetSafeNormal(), Spread);
+
+		End = Start + (Dir * Stat.Distance);
+	}
+	else
+	{
+		Start = GetSocketLocation(MuzzleSocket);
+
+		Dir = FRotationMatrix{ Rot }.GetScaledAxis(EAxis::X);
+		Dir = FMath::VRandCone(Dir, Spread);
+
+		End = Loc + (Dir * Stat.Distance);
+
+		Dir = End - Start;
+		Dir.Normalize();
+	}
 
 	FCollisionQueryParams Params;
 	Params.AddIgnoredActor(Owner);
@@ -252,12 +282,12 @@ void UWeaponComponent::Shot()
 
 	Spread = FMath::Max(Spread + Stat.SpreadInc, MaxSpread);
 
-	Stat.Clip -= Stat.BulletInShot;
-	UE_LOG(LogTemp, Log, TEXT("Clip : %d"), Stat.Clip);
-	if (--ShotNum > 0) return;
-
-	bFiring = false;
-	if (Stat.Clip <= 0) ClientReload();
+	Clip -= Stat.BulletInShot;
+	if (--ShotNum <= 0)
+	{
+		ClientStopShot(Clip);
+		bFiring = false;
+	}
 }
 
 void UWeaponComponent::ReloadImpl()

@@ -34,6 +34,7 @@ void UWeaponComponent::Initialize(const FWeaponData& WeaponData)
 	
 	check(Stat.ShotableMode & (1 << static_cast<uint8>(ShotMode)));
 
+	SetAnimClass(WeaponData.AnimClass);
 	FPTStatics::AsyncLoad(WeaponData.Mesh, [this, WeaponData]
 	{
 		SetSkeletalMesh(WeaponData.Mesh.Get());

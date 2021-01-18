@@ -12,6 +12,9 @@ struct PROJECTT_API FWeaponData
 	TAssetPtr<class USkeletalMesh> Mesh;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TSubclassOf<class UAnimInstance> AnimClass;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	FName Socket;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)

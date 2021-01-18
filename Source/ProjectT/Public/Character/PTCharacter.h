@@ -51,6 +51,7 @@ private:
 	void Death();
 
 public:
+	UPROPERTY(BlueprintAssignable)
 	FOnDeath OnDeath;
 
 private:

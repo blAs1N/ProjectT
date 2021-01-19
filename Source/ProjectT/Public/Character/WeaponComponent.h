@@ -121,9 +121,6 @@ private:
 	FWeaponStatData Stat;
 
 	UPROPERTY(EditDefaultsOnly, meta = (AllowPrivateAccess = true))
-	FCollisionProfileName BulletCollisionProfile;
-
-	UPROPERTY(EditDefaultsOnly, meta = (AllowPrivateAccess = true))
 	FName MuzzleSocket;
 
 	UPROPERTY(EditDefaultsOnly, meta = (AllowPrivateAccess = true))

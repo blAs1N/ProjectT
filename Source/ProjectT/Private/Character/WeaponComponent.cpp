@@ -266,7 +266,7 @@ void UWeaponComponent::Shot()
 	Params.AddIgnoredActor(Owner);
 
 	FHitResult Result;
-	if (GetWorld()->LineTraceSingleByProfile(Result, Start, End, BulletCollisionProfile.Name, Params))
+		Start, End, ECollisionChannel::ECC_Visibility, Params))
 	{
 		if (Cast<APTCharacter>(Result.GetActor()))
 		{

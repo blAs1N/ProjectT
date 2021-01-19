@@ -70,6 +70,9 @@ private:
 	UPROPERTY(EditAnywhere, meta = (AllowPrivateAccess = true))
 	FName SightSocketName;
 
+	UPROPERTY(EditAnywhere, meta = (AllowPrivateAccess = true))
+	FName HeadName;
+
 	FStatData Stat;
 
 	float Health;

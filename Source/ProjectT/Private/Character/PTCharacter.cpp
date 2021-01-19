@@ -30,6 +30,10 @@ APTCharacter::APTCharacter()
 float APTCharacter::TakeDamage(float Damage, const FDamageEvent& DamageEvent,
 	AController* EventInstigator, AActor* DamageCauser)
 {
+	if (auto Event = static_cast<const FPointDamageEvent*>(&DamageEvent))
+		if (Event->HitInfo.BoneName == HeadName)
+			Damage = Stat.Health;
+
 	Damage = Super::TakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser);
 	if (Damage <= 0.0f) return 0.0f;
 

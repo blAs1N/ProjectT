@@ -5,11 +5,11 @@
 void APTPlayerController::OnPossess(APawn* InPawn)
 {
 	Super::OnPossess(InPawn);
-	OnPossessed(InPawn);
+	OnPossessed.Broadcast(InPawn);
 }
 
 void APTPlayerController::OnUnPossess()
 {
-	OnUnPossessed(GetPawn());
+	OnUnPossessed.Broadcast(GetPawn());
 	Super::OnUnPossess();
 }

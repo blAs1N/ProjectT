@@ -7,7 +7,6 @@
 #include "PTPlayerController.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPossessed, APawn*, InPawn);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnUnPossessed, APawn*, InPawn);
 
 UCLASS()
 class PROJECTT_API APTPlayerController final : public APlayerController
@@ -15,10 +14,9 @@ class PROJECTT_API APTPlayerController final : public APlayerController
 	GENERATED_BODY()
 	
 private:
-	void OnPossess(APawn* InPawn) override;
-	void OnUnPossess() override;
+	void SetPawn(APawn* InPawn) override;
 
 public:
 	FOnPossessed OnPossessed;
-	FOnUnPossessed OnUnPossessed;
+	FOnPossessed OnUnPossessed;
 };

@@ -2,14 +2,22 @@
 
 #include "Character/PTPlayerController.h"
 
-void APTPlayerController::OnPossess(APawn* InPawn)
+void APTPlayerController::SetPawn(APawn* InPawn)
 {
-	Super::OnPossess(InPawn);
-	OnPossessed.Broadcast(InPawn);
-}
+	FOnPossessed* Callback = nullptr;
+	APawn* Param = nullptr;
 
-void APTPlayerController::OnUnPossess()
-{
-	OnUnPossessed.Broadcast(GetPawn());
-	Super::OnUnPossess();
+	if (InPawn)
+	{
+		Callback = &OnPossessed;
+		Param = InPawn;
+	}
+	else
+	{
+		Callback = &OnUnPossessed;
+		Param = InPawn;
+	}
+
+	Super::SetPawn(InPawn);
+	Callback->Broadcast(Param);
 }

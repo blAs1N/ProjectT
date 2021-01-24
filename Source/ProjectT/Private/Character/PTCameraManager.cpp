@@ -6,16 +6,11 @@
 #include "Character/PTPlayerController.h"
 #include "Character/WeaponComponent.h"
 
-void APTCameraManager::InitializeFor(APlayerController* PC)
+void APTCameraManager::BeginPlay()
 {
-	Super::InitializeFor(PC);
-
-	auto* PTPC = Cast<APTPlayerController>(PC);
+	Super::BeginPlay();
 	
-	if (PTPC->GetPawn())
-		OnPossessed(PTPC->GetPawn());
-	else
-		PTPC->OnPossessed.AddDynamic(this, &APTCameraManager::OnPossessed);
+	CameraInfo.FOV = TargetInfo.FOV = UnaimFOV;
 
 	if (AimChangeCurve)
 	{
@@ -27,63 +22,65 @@ void APTCameraManager::InitializeFor(APlayerController* PC)
 
 void APTCameraManager::UpdateViewTargetInternal(FTViewTarget& OutVT, float DeltaTime)
 {
-	if (!PTOwner)
+	auto* Target = Cast<APTCharacter>(OutVT.Target);
+	if (!Target)
 	{
 		Super::UpdateViewTargetInternal(OutVT, DeltaTime);
 		return;
 	}
 
-	TargetRot = PTOwner->GetControlRotation();
-	TargetLoc = bIsAiming ? GetAimCamLoc() : GetUnaimCamLoc();
+	ApplyViewPitch(Target->GetPostureComp()->GetPostureState());
+
+	const bool bIsAim = Target->GetWeaponComp()->IsAiming();
+	TargetInfo.Rot = Target->GetControlRotation();
+	TargetInfo.Loc = bIsAim ? GetAimCamLoc(Target) : GetUnaimCamLoc(Target);
+
+	if (bIsAim != bIsAiming)
+	{
+		TargetInfo.FOV = (bIsAim ? AimFOV : UnaimFOV);
+		ChangeInfo = CameraInfo;
+
+		AimChangeTimeline.PlayFromStart();
+	}
+
+	bIsAiming = bIsAim;
 	
 	if (AimChangeCurve && AimChangeTimeline.IsPlaying())
 		AimChangeTimeline.TickTimeline(DeltaTime);
 	else
 	{
-		CameraLoc = TargetLoc;
-		CameraRot = TargetRot;
-		CameraFOV = TargetFOV;
+		CameraInfo.Loc = TargetInfo.Loc;
+		CameraInfo.Rot = TargetInfo.Rot;
 	}
 
-	OutVT.POV.Location = CameraLoc;
-	OutVT.POV.Rotation = CameraRot;
-	OutVT.POV.FOV = CameraFOV;
+	OutVT.POV.Location = CameraInfo.Loc;
+	OutVT.POV.Rotation = CameraInfo.Rot;
+	OutVT.POV.FOV = CameraInfo.FOV;
 }
 
-void APTCameraManager::OnPossessed(APawn* InPawn)
-{
-	PTOwner = Cast<APTCharacter>(InPawn);
-
-	OnSwitchAim(PTOwner->GetWeaponComp()->IsAiming());
-	OnSwitchPosture(PTOwner->GetPostureComp()->GetPostureState());
-
-	PTOwner->GetWeaponComp()->OnSwitchAim.AddDynamic(this, &APTCameraManager::OnSwitchAim);
-	PTOwner->GetPostureComp()->OnSwitchPosture.AddDynamic(this, &APTCameraManager::OnSwitchPosture);
-}
-
-void APTCameraManager::OnSwitchPosture(EPostureState NewState)
+void APTCameraManager::ApplyViewPitch(EPostureState NewState)
 {
 	FViewPitch ViewPitch = ViewPitchs[static_cast<uint8>(NewState)];
 	ViewPitchMin = ViewPitch.Min;
 	ViewPitchMax = ViewPitch.Max;
 }
 
-void APTCameraManager::OnSwitchAim(bool bIsAim)
+void APTCameraManager::ChangeCameraInfo(float Value)
 {
-	bIsAiming = bIsAim;
-	TargetFOV = bIsAiming ? AimFOV : UnaimFOV;
-	AimChangeTimeline.PlayFromStart();
+	CameraInfo.Loc = FMath::Lerp(ChangeInfo.Loc, TargetInfo.Loc, Value);
+	CameraInfo.Rot = FMath::RInterpTo(ChangeInfo.Rot, TargetInfo.Rot, 1.0f, Value);
+	CameraInfo.FOV = FMath::Lerp(ChangeInfo.FOV, TargetInfo.FOV, Value);
 }
 
-FVector APTCameraManager::GetUnaimCamLoc()
+FVector APTCameraManager::GetUnaimCamLoc(APTCharacter* Target)
 {
-	const FVector ViewLoc = PTOwner->GetMesh()->GetSocketLocation(UnaimViewPointName);
-	const FVector Offset = TargetRot.RotateVector(TargetOffset);
+	const FVector ViewLoc = Target->GetMesh()->GetSocketLocation(UnaimViewPointName);
+	const FVector Offset = TargetInfo.Rot.RotateVector(TargetOffset);
 	const FVector RetLoc = ViewLoc + Offset;
-	
+
 	FHitResult Result;
 	FCollisionQueryParams Params;
-	Params.AddIgnoredActor(PTOwner);
+	Params.AddIgnoredActor(Target);
 
 	const bool bCollide = GetWorld()->SweepSingleByChannel(Result, ViewLoc, RetLoc,
 		FQuat::Identity, ECollisionChannel::ECC_Camera, FCollisionShape::MakeSphere(ProbeSize), Params);
@@ -91,14 +88,7 @@ FVector APTCameraManager::GetUnaimCamLoc()
 	return bCollide ? Result.Location : RetLoc;
 }
 
-FVector APTCameraManager::GetAimCamLoc()
+FVector APTCameraManager::GetAimCamLoc(APTCharacter* Target)
 {
-	return PTOwner->GetWeaponComp()->GetSocketLocation(AimViewPointName);
-}
-
-void APTCameraManager::ChangeCameraInfo(float Value)
-{
-	CameraLoc = FMath::Lerp(CameraLoc, TargetLoc, Value);
-	CameraRot = FMath::RInterpTo(CameraRot, TargetRot, 1.0f, Value);
-	CameraFOV = FMath::Lerp(CameraFOV, TargetFOV, Value);
+	return Target->GetWeaponComp()->GetSocketLocation(AimViewPointName);
 }

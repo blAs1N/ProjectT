@@ -26,28 +26,19 @@ class PROJECTT_API APTCameraManager final : public APlayerCameraManager
 	GENERATED_BODY()
 	
 private:
-	void InitializeFor(APlayerController* PC) override;
+	void BeginPlay() override;
 	void UpdateViewTargetInternal(FTViewTarget& OutVT, float DeltaTime) override;
 
 	UFUNCTION()
-	void OnPossessed(APawn* InPawn);
-
-	UFUNCTION()
-	void OnSwitchPosture(EPostureState NewState);
-
-	UFUNCTION()
-	void OnSwitchAim(bool bIsAim);
+	void ApplyViewPitch(EPostureState NewState);
 
 	UFUNCTION()
 	void ChangeCameraInfo(float Value);
 
-	FVector GetUnaimCamLoc();
-	FVector GetAimCamLoc();
+	FVector GetUnaimCamLoc(class APTCharacter* Target);
+	FVector GetAimCamLoc(APTCharacter* Target);
 
 private:
-	UPROPERTY(Transient)
-	class APTCharacter* PTOwner;
-
 	UPROPERTY(EditAnywhere, Category = Camera, meta = (AllowPrivateAccess = true))
 	FViewPitch ViewPitchs[3];
 
@@ -74,14 +65,16 @@ private:
 
 	FTimeline AimChangeTimeline;
 
-	FVector CameraLoc;
-	FVector TargetLoc;
+	struct FCamInfo final
+	{
+		FVector Loc;
+		FRotator Rot;
+		float FOV;
+	};
 
-	FRotator CameraRot;
-	FRotator TargetRot;
-
-	float CameraFOV;
-	float TargetFOV;
+	FCamInfo CameraInfo;
+	FCamInfo TargetInfo;
+	FCamInfo ChangeInfo;
 
 	uint8 bIsAiming : 1;
 };

@@ -31,7 +31,7 @@ void APTCameraManager::UpdateViewTargetInternal(FTViewTarget& OutVT, float Delta
 
 	ApplyViewPitch(Target->GetPostureComp()->GetPostureState());
 
-	const bool bIsAim = Target->GetWeaponComp()->IsAiming();
+	const bool bIsAim = !Target->IsDeath() && Target->GetWeaponComp()->IsAiming();
 	TargetInfo.Rot = Target->GetControlRotation();
 	TargetInfo.Loc = bIsAim ? GetAimCamLoc(Target) : GetUnaimCamLoc(Target);
 
@@ -44,7 +44,7 @@ void APTCameraManager::UpdateViewTargetInternal(FTViewTarget& OutVT, float Delta
 	}
 
 	bIsAiming = bIsAim;
-	
+
 	if (AimChangeCurve && AimChangeTimeline.IsPlaying())
 		AimChangeTimeline.TickTimeline(DeltaTime);
 	else

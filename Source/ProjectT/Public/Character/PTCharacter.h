@@ -11,5 +11,6 @@ class APTCharacter : public ACharacter
 {
 	GENERATED_BODY()
 
-
+public:
+	APTCharacter(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 };

@@ -18,9 +18,9 @@ void AWeapon::Initialize(int32 Key)
 		(FName{ *FString::FromInt(Key) }, TEXT("")))
 	{
 		Mesh->SetAnimClass(Data->AnimClass);
-		AsyncLoad(Data->Mesh, [Mesh = Mesh, Data]
+		AsyncLoad(Data->Mesh, [Mesh = Mesh, Data] (const auto& Ptr)
 			{
-				Mesh->SetSkeletalMesh(Data->Mesh.Get());
+				Mesh->SetSkeletalMesh(Ptr.Get());
 			});
 
 		SetActorRelativeTransform(Data->Transform);

@@ -33,11 +33,14 @@ private:
 	UPROPERTY(Transient, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
 	AWeapon* Weapon;
 
-	UPROPERTY(EditAnywhere, meta = (AllowPrivateAccess = true))
+	UPROPERTY(EditDefaultsOnly, meta = (AllowPrivateAccess = true))
 	TSubclassOf<AWeapon> WeaponClass;
 
 	UPROPERTY(EditAnywhere, meta = (AllowPrivateAccess = true))
-	FDataTableRowHandle CharacterKey;
+	class UDataTable* CharacterDataTable;
+
+	UPROPERTY(EditAnywhere, meta = (AllowPrivateAccess = true))
+	int32 CharacterKey;
 
 	UPROPERTY(EditAnywhere, meta = (AllowPrivateAccess = true))
 	float BackConstant;

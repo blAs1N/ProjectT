@@ -73,15 +73,17 @@ void APTCharacter::PostEditChangeProperty(FPropertyChangedEvent& PropertyChanged
 void APTCharacter::Initialize()
 {
 	static const FCharacterData DefaultData{};
+	if (!CharacterDataTable) return;
 
-	const auto* Data = CharacterKey.GetRow<FCharacterData>(TEXT(""));
-	if (!Data) Data = &DefaultData;
+	if (const auto* Data = CharacterDataTable->
+		FindRow<FCharacterData>(FName{ *FString::FromInt(CharacterKey) }, TEXT("")))
+	{
+		GetMesh()->SetRelativeRotation(FRotator{ 0.0f, Data->MeshYaw, 0.0f });
+		GetMesh()->SetAnimClass(Data->AnimClass);
+		AsyncLoad(Data->Mesh, [this, Data] (const auto& Mesh)
+			{ GetMesh()->SetSkeletalMesh(Mesh.Get()); });
 
-	GetMesh()->SetRelativeRotation(FRotator{ 0.0f, Data->MeshYaw, 0.0f });
-	GetMesh()->SetAnimClass(Data->AnimClass);
-	AsyncLoad(Data->Mesh, [this, Data]
-		{ GetMesh()->SetSkeletalMesh(Data->Mesh.Get()); });
-
-	Weapon->Initialize(CharacterKey.RowName);
-	Weight = Data->Weight;
+		Weapon->Initialize(CharacterKey);
+		Weight = Data->Weight;
+	}
 }

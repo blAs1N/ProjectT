@@ -2,7 +2,7 @@
 
 #include "UObject/ObjectMacros.h"
 #include "UObject/SoftObjectPtr.h"
-#include "CompositeModelParam..generated.h"
+#include "CompositeModelParam.generated.h"
 
 USTRUCT(Atomic, BlueprintType)
 struct PROJECTT_API FCompositeModelParam

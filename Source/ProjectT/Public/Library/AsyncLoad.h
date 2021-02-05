@@ -11,8 +11,8 @@ static void AsyncLoad(const TAssetPtr<T>& SoftPtr, Func&& Fn)
 {
 	if (!SoftPtr.IsNull() && SoftPtr.IsPending())
 	{
-		auto Callback = FStreamableDelegate::CreateLambda(Forward<Func>(Fn));
+		auto Callback = FStreamableDelegate::CreateLambda([SoftPtr, Fn = Forward<Func>(Fn)]{ Fn(SoftPtr) });
 		UAssetManager::GetStreamableManager().RequestAsyncLoad(SoftPtr.ToSoftObjectPath(), MoveTemp(Callback));
 	}
-	else Fn();
+	else Fn(SoftPtr);
 }

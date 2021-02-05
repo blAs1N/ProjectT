@@ -7,7 +7,7 @@
 #include "UObject/SoftObjectPtr.h"
 
 template <class T, class Func>
-static void AsyncLoad(const TAssetPtr<T>& SoftPtr, Func&& Fn)
+static void AsyncLoad(const TSoftObjectPtr<T>& SoftPtr, Func&& Fn)
 {
 	if (!SoftPtr.IsNull() && SoftPtr.IsPending())
 	{

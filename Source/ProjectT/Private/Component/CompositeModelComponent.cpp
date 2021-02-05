@@ -2,16 +2,34 @@
 
 #include "Component/CompositeModelComponent.h"
 #include "SkeletalMeshMerge.h"
+#include "Library/AsyncLoad.h"
 
 UCompositeModelComponent::UCompositeModelComponent()
 {
 	bWantsInitializeComponent = true;
 }
 
+void UCompositeModelComponent::SetParam(const FCompositeModelParam& InParam)
+{
+	if (GetOwner() == nullptr)
+		return;
+	
+	Param.Pieces.RemoveAll([this](const auto& Ptr) { return !Ptr; });
+
+	if (Param.Pieces.Num() > 0)
+	{
+		TargetMesh = NewObject<USkeletalMesh>(this);
+		AsyncLoad(Param.Skeleton, [this]
+			(const auto& Ptr) { OnLoadSkeleton(Ptr); });
+
+	}
+	else SetSkeletalMesh(nullptr);
+}
+
 void UCompositeModelComponent::InitializeComponent()
 {
 	Super::InitializeComponent();
-	Initialize();
+	SetParam(Param);
 }
 
 #if WITH_EDITOR
@@ -21,52 +39,52 @@ void UCompositeModelComponent::PostEditChangeProperty(FPropertyChangedEvent& Pro
 	Super::PostEditChangeProperty(PropertyChangedEvent);
 	if (!PropertyChangedEvent.Property) return;
 
-	static const FName& SkeletonName = GET_MEMBER_NAME_CHECKED(UCompositeModelComponent, Skeleton);
-	static const FName& PiecesName = GET_MEMBER_NAME_CHECKED(UCompositeModelComponent, Pieces);
+	FName PropertyName = PropertyChangedEvent.GetPropertyName();
 
-	if (PropertyChangedEvent.GetPropertyName() == SkeletonName)
+	if (PropertyName == TEXT("Skeleton"))
 	{
-		Pieces.Empty();
-		Initialize();
+		Param.Pieces.Empty();
+		SetParam(Param);
 	}
-
-	if (PropertyChangedEvent.GetPropertyName() == PiecesName)
-		Initialize();
+	else if (PropertyName == TEXT("Piece"))
+		SetParam(Param);
+	else if (PropertyName == TEXT("AnimClass"))
+		SetAnimClass(Param.AnimClass);
 }
 
 #endif
 
-void UCompositeModelComponent::Initialize()
+void UCompositeModelComponent::OnLoadSkeleton(const TSoftObjectPtr<USkeleton>& Ptr)
 {
-	if (GetOwner() == nullptr)
-		return;
-	
-	const int32 PieceNum = Pieces.Num();
-	TArray<USkeletalMesh*> mergeMeshes;
-	for (int32 i = 0; i < PieceNum; ++i)
-	{
-		if (!Pieces[i]) continue;
+	TargetMesh->Skeleton = Ptr.Get();
+	LoadedPieceNum = 0;
 
-		if (Pieces[i]->Skeleton != Skeleton)
-		{
-			UE_LOG(LogTemp, Warning, TEXT("The skeletons of the pieces must match"));
-			Pieces[i] = nullptr;
-			continue;
-		}
-	
-		mergeMeshes.Add(Pieces[i]);
+	for (const auto& Piece : Param.Pieces)
+		AsyncLoad(Piece, [this](const auto& Ptr) { OnLoadPiece(Ptr); });
+}
+
+void UCompositeModelComponent::OnLoadPiece(const TSoftObjectPtr<USkeletalMesh>& Ptr)
+{
+	if (Ptr->Skeleton != Param.Skeleton)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("%s's skeleton is not correct"), *Ptr->GetName());
+		Param.Pieces.Remove(Ptr);
+		return;
 	}
 
-	if (mergeMeshes.Num() > 0)
+	if (++LoadedPieceNum >= Param.Pieces.Num())
 	{
-		USkeletalMesh* targetMesh{ NewObject<USkeletalMesh>(this) };
-		targetMesh->Skeleton = Skeleton;
+		const int32 PieceNum = Param.Pieces.Num();
+		TArray<USkeletalMesh*> Pieces;
+		Pieces.Init(nullptr, PieceNum);
+
+		for (int32 i = 0; PieceNum; ++i)
+			Pieces[i] = Param.Pieces[i].Get();
 
 		TArray<FSkelMeshMergeSectionMapping> sectionMappings;
-		FSkeletalMeshMerge merger{ targetMesh, mergeMeshes, sectionMappings, 0 };
+		FSkeletalMeshMerge merger{ TargetMesh, Pieces, sectionMappings, 0 };
 
 		check(merger.DoMerge());
-		SetSkeletalMesh(targetMesh);
+		SetSkeletalMesh(TargetMesh);
 	}
-	else SetSkeletalMesh(nullptr);
 }

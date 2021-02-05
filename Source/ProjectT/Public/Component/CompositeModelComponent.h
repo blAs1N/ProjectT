@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/SkeletalMeshComponent.h"
+#include "Data/CompositeModelParam.h"
 #include "CompositeModelComponent.generated.h"
 
 UCLASS()
@@ -14,6 +15,9 @@ class PROJECTT_API UCompositeModelComponent final : public USkeletalMeshComponen
 public:
 	UCompositeModelComponent();
 
+	UFUNCTION(BlueprintSetter)
+	void SetParam(const FCompositeModelParam& InParam);
+
 private:
 	void InitializeComponent() override;
 
@@ -21,12 +25,15 @@ private:
 	void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
 #endif
 
-	void Initialize();
+	void OnLoadSkeleton(const TSoftObjectPtr<USkeleton>& Ptr);
+	void OnLoadPiece(const TSoftObjectPtr<USkeletalMesh>& Ptr);
 
 private:
-	UPROPERTY(EditAnywhere, Category = Piece, meta = (AllowPrivateAccess = true))
-	USkeleton* Skeleton;
+	UPROPERTY(EditAnywhere, BlueprintSetter = SetParam, Category = Piece, meta = (AllowPrivateAccess = true))
+	FCompositeModelParam Param;
 
-	UPROPERTY(EditAnywhere, Category = Piece, meta = (AllowPrivateAccess = true))
-	TArray<USkeletalMesh*> Pieces;
+	UPROPERTY(Transient)
+	USkeletalMesh* TargetMesh;
+
+	int32 LoadedPieceNum;
 };

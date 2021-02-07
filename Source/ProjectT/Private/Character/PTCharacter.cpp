@@ -79,10 +79,8 @@ void APTCharacter::Initialize()
 		FindRow<FCharacterData>(FName{ *FString::FromInt(CharacterKey) }, TEXT("")))
 	{
 		GetMesh()->SetRelativeRotation(FRotator{ 0.0f, Data->MeshYaw, 0.0f });
-		GetMesh()->SetAnimClass(Data->AnimClass);
-		AsyncLoad(Data->Mesh, [this, Data] (const auto& Mesh)
-			{ GetMesh()->SetSkeletalMesh(Mesh.Get()); });
-
+		GetMesh()->SetRelativeLocation(FVector{ 0.0f, 0.0f, Data->MeshZ });
+		
 		Weapon->Initialize(CharacterKey);
 		Weight = Data->Weight;
 	}

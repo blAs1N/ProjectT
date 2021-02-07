@@ -15,7 +15,7 @@ struct PROJECTT_API FCharacterData : public FTableRowBase
 	TAssetPtr<class USkeletalMesh> Mesh;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	TSubclassOf<class UAnimInstance> AnimClass;
+	float MeshZ;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	float MeshYaw;

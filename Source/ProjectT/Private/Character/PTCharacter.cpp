@@ -78,6 +78,8 @@ void APTCharacter::Initialize()
 	if (const auto* Data = CharacterDataTable->
 		FindRow<FCharacterData>(FName{ *FString::FromInt(CharacterKey) }, TEXT("")))
 	{
+		Cast<UCompositeModelComponent>(GetMesh())->SetParam(Data->ModelParam);
+		
 		GetMesh()->SetRelativeRotation(FRotator{ 0.0f, Data->MeshYaw, 0.0f });
 		GetMesh()->SetRelativeLocation(FVector{ 0.0f, 0.0f, Data->MeshZ });
 		

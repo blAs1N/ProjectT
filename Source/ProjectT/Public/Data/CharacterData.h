@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Engine/DataTable.h"
+#include "Data/CompositeModelParam.h"
 #include "CharacterData.generated.h"
 
 USTRUCT(Atomic, BlueprintType)
@@ -12,7 +13,7 @@ struct PROJECTT_API FCharacterData : public FTableRowBase
 	FText Name;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	TAssetPtr<class USkeletalMesh> Mesh;
+	FCompositeModelParam ModelParam;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	float MeshZ;

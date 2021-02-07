@@ -4,11 +4,6 @@
 #include "SkeletalMeshMerge.h"
 #include "Library/AsyncLoad.h"
 
-UCompositeModelComponent::UCompositeModelComponent()
-{
-	bWantsInitializeComponent = true;
-}
-
 void UCompositeModelComponent::SetParam(const FCompositeModelParam& InParam)
 {
 	if (GetOwner() == nullptr)
@@ -25,34 +20,6 @@ void UCompositeModelComponent::SetParam(const FCompositeModelParam& InParam)
 	}
 	else SetSkeletalMesh(nullptr);
 }
-
-void UCompositeModelComponent::InitializeComponent()
-{
-	Super::InitializeComponent();
-	SetParam(Param);
-}
-
-#if WITH_EDITOR
-
-void UCompositeModelComponent::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
-{
-	Super::PostEditChangeProperty(PropertyChangedEvent);
-	if (!PropertyChangedEvent.Property) return;
-
-	FName PropertyName = PropertyChangedEvent.GetPropertyName();
-
-	if (PropertyName == TEXT("Skeleton"))
-	{
-		Param.Pieces.Empty();
-		SetParam(Param);
-	}
-	else if (PropertyName == TEXT("Piece"))
-		SetParam(Param);
-	else if (PropertyName == TEXT("AnimClass"))
-		SetAnimClass(Param.AnimClass);
-}
-
-#endif
 
 void UCompositeModelComponent::OnLoadSkeleton(const TSoftObjectPtr<USkeleton>& Ptr)
 {

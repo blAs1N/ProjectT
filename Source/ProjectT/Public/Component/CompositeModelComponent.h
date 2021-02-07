@@ -13,18 +13,10 @@ class PROJECTT_API UCompositeModelComponent final : public USkeletalMeshComponen
 	GENERATED_BODY()
 	
 public:
-	UCompositeModelComponent();
-
 	UFUNCTION(BlueprintSetter)
 	void SetParam(const FCompositeModelParam& InParam);
 
 private:
-	void InitializeComponent() override;
-
-#if WITH_EDITOR
-	void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
-#endif
-
 	void OnLoadSkeleton(const TSoftObjectPtr<USkeleton>& Ptr);
 	void OnLoadPiece(const TSoftObjectPtr<USkeletalMesh>& Ptr);
 

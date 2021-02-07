@@ -63,8 +63,11 @@ void APTCharacter::PostEditChangeProperty(FPropertyChangedEvent& PropertyChanged
 	Super::PostEditChangeProperty(PropertyChangedEvent);
 	if (!PropertyChangedEvent.Property) return;
 
+	const static auto DataTableName = GET_MEMBER_NAME_CHECKED(APTCharacter, CharacterDataTable);
+	const static auto CharKeyName = GET_MEMBER_NAME_CHECKED(APTCharacter, CharacterKey);
+
 	const auto PropertyName = PropertyChangedEvent.GetPropertyName();
-	if (PropertyName == TEXT("DataTable") || PropertyName == TEXT("RowName"))
+	if (PropertyName == DataTableName || PropertyName == CharKeyName)
 		Initialize();
 }
 

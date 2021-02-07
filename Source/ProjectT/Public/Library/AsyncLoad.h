@@ -9,7 +9,9 @@
 template <class T, class Func>
 static void AsyncLoad(const TSoftObjectPtr<T>& SoftPtr, Func&& Fn)
 {
-	if (!SoftPtr.IsNull() && SoftPtr.IsPending())
+	if (SoftPtr.IsNull()) return;
+
+	if (SoftPtr.IsPending())
 	{
 		auto Callback = FStreamableDelegate::CreateLambda([SoftPtr, Fn = Forward<Func>(Fn)] { Fn(SoftPtr); });
 		UAssetManager::GetStreamableManager().RequestAsyncLoad(SoftPtr.ToSoftObjectPath(), MoveTemp(Callback));

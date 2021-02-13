@@ -13,7 +13,10 @@ struct PROJECTT_API FCharacterData : public FTableRowBase
 	FText Name;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	FCompositeModelParam ModelParam;
+	USkeletalMesh* Mesh;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TSubclassOf<UAnimInstance> AnimClass;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	float MeshZ;

@@ -8,9 +8,10 @@
 #include "Library/AsyncLoad.h"
 
 APTCharacter::APTCharacter(const FObjectInitializer& ObjectInitializer)
-	: Super(ObjectInitializer.SetDefaultSubobjectClass<UCompositeModelComponent>(MeshComponentName))
+	: Super(ObjectInitializer/*.SetDefaultSubobjectClass<UCompositeModelComponent>(MeshComponentName)*/)
 {
 	PrimaryActorTick.bCanEverTick = true;
+	WeaponClass = AWeapon::StaticClass();
 }
 
 float APTCharacter::TakeDamage(float Damage, const FDamageEvent&
@@ -42,11 +43,12 @@ float APTCharacter::TakeDamage(float Damage, const FDamageEvent&
 	return Damage;
 }
 
-void APTCharacter::PostInitializeComponents()
+void APTCharacter::OnConstruction(const FTransform& Transform)
 {
-	Super::PostInitializeComponents();
+	Super::OnConstruction(Transform);
 
-	if (UWorld* World = GetWorld())
+	auto World = GetWorld();
+	if (!Weapon && World)
 	{
 		FActorSpawnParameters Params;
 		Params.Owner = Params.Instigator = this;
@@ -56,37 +58,25 @@ void APTCharacter::PostInitializeComponents()
 	Initialize();
 }
 
-#if WITH_EDITOR
-
-void APTCharacter::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
-{
-	Super::PostEditChangeProperty(PropertyChangedEvent);
-	if (!PropertyChangedEvent.Property) return;
-
-	const static auto DataTableName = GET_MEMBER_NAME_CHECKED(APTCharacter, CharacterDataTable);
-	const static auto CharKeyName = GET_MEMBER_NAME_CHECKED(APTCharacter, CharacterKey);
-
-	const auto PropertyName = PropertyChangedEvent.GetPropertyName();
-	if (PropertyName == DataTableName || PropertyName == CharKeyName)
-		Initialize();
-}
-
-#endif
-
 void APTCharacter::Initialize()
 {
 	static const FCharacterData DefaultData{};
-	if (!CharacterDataTable) return;
+	if (!CharacterDataTable || CharacterKey == AppliedKey) return;
 
+	AppliedKey = CharacterKey;
 	if (const auto* Data = CharacterDataTable->
-		FindRow<FCharacterData>(FName{ *FString::FromInt(CharacterKey) }, TEXT("")))
+		FindRow<FCharacterData>(FName{ *FString::FromInt(AppliedKey) }, TEXT("")))
 	{
-		Cast<UCompositeModelComponent>(GetMesh())->SetParam(Data->ModelParam);
-		
+		//Cast<UCompositeModelComponent>(GetMesh())->SetParam(Data->ModelParam);
+		GetMesh()->SetSkeletalMesh(Data->Mesh);
+		GetMesh()->SetAnimClass(Data->AnimClass);
+
 		GetMesh()->SetRelativeRotation(FRotator{ 0.0f, Data->MeshYaw, 0.0f });
 		GetMesh()->SetRelativeLocation(FVector{ 0.0f, 0.0f, Data->MeshZ });
 		
-		Weapon->Initialize(CharacterKey);
 		Weight = Data->Weight;
+
+		if (Weapon)
+			Weapon->Initialize(AppliedKey);
 	}
 }

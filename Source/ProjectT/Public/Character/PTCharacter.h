@@ -21,11 +21,7 @@ public:
 	FORCEINLINE class AWeapon* GetWeapon() const noexcept { return Weapon; }
 
 private:
-	void PostInitializeComponents() override;
-
-#if WITH_EDITOR
-	void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
-#endif
+	void OnConstruction(const FTransform& Transform) override;
 
 	void Initialize();
 
@@ -48,4 +44,6 @@ private:
 	float BackPercent;
 
 	float Weight;
+
+	int32 AppliedKey;
 };

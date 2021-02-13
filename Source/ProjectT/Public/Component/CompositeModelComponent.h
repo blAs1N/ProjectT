@@ -14,18 +14,5 @@ class PROJECTT_API UCompositeModelComponent final : public USkeletalMeshComponen
 	
 public:
 	UFUNCTION(BlueprintSetter)
-	void SetParam(const FCompositeModelParam& InParam);
-
-private:
-	void OnLoadSkeleton(const TSoftObjectPtr<USkeleton>& Ptr);
-	void OnLoadPiece(const TSoftObjectPtr<USkeletalMesh>& Ptr);
-
-private:
-	UPROPERTY(EditAnywhere, BlueprintSetter = SetParam, Category = Piece, meta = (AllowPrivateAccess = true))
-	FCompositeModelParam Param;
-
-	UPROPERTY(Transient)
-	USkeletalMesh* TargetMesh;
-
-	int32 LoadedPieceNum;
+	void SetParam(const FCompositeModelParam& Param);
 };

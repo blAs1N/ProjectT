@@ -10,11 +10,11 @@ struct PROJECTT_API FCompositeModelParam
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TSoftObjectPtr<class USkeleton> Skeleton;
+	class USkeleton* Skeleton;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TSubclassOf<class UAnimInstance> AnimClass;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TArray<TSoftObjectPtr<class USkeletalMesh>> Pieces;
+	TArray<class USkeletalMesh*> Pieces;
 };

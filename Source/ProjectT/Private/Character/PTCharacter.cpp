@@ -3,6 +3,7 @@
 #include "Character/PTCharacter.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Component/CompositeModelComponent.h"
+#include "Component/WeaponComponent.h"
 #include "Data/CharacterData.h"
 #include "Equipment/Weapon.h"
 #include "Library/AsyncLoad.h"
@@ -11,7 +12,10 @@ APTCharacter::APTCharacter(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer/*.SetDefaultSubobjectClass<UCompositeModelComponent>(MeshComponentName)*/)
 {
 	PrimaryActorTick.bCanEverTick = true;
-	WeaponClass = AWeapon::StaticClass();
+
+	WeaponComp = CreateDefaultSubobject<UWeaponComponent>(TEXT("Weapon"));
+	WeaponMeshComp = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("WeaponMesh"));
+	WeaponMeshComp->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform);
 }
 
 float APTCharacter::TakeDamage(float Damage, const FDamageEvent&
@@ -46,15 +50,6 @@ float APTCharacter::TakeDamage(float Damage, const FDamageEvent&
 void APTCharacter::OnConstruction(const FTransform& Transform)
 {
 	Super::OnConstruction(Transform);
-
-	auto World = GetWorld();
-	if (!Weapon && World)
-	{
-		FActorSpawnParameters Params;
-		Params.Owner = Params.Instigator = this;
-		Weapon = World->SpawnActor<AWeapon>(WeaponClass, Params);
-	}
-
 	Initialize();
 }
 
@@ -76,7 +71,6 @@ void APTCharacter::Initialize()
 		
 		Weight = Data->Weight;
 
-		if (Weapon)
-			Weapon->Initialize(AppliedKey);
+		WeaponComp->Initialize(AppliedKey);
 	}
 }

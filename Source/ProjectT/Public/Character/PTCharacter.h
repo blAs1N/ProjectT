@@ -18,7 +18,8 @@ public:
 	float TakeDamage(float Damage, const FDamageEvent& DamageEvent,
 		AController* EventInstigator, AActor* DamageCauser) override;
 
-	FORCEINLINE class AWeapon* GetWeapon() const noexcept { return Weapon; }
+	FORCEINLINE class UWeaponComponent* GetWeaponComponent() const noexcept { return WeaponComp; }
+	FORCEINLINE USkeletalMeshComponent* GetWeaponMeshComponent() const noexcept { return WeaponMeshComp; }
 
 private:
 	void OnConstruction(const FTransform& Transform) override;
@@ -26,17 +27,17 @@ private:
 	void Initialize();
 
 private:
-	UPROPERTY(Transient, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
-	AWeapon* Weapon;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
+	UWeaponComponent* WeaponComp;
 
-	UPROPERTY(EditDefaultsOnly, meta = (AllowPrivateAccess = true))
-	TSubclassOf<AWeapon> WeaponClass;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly,  meta = (AllowPrivateAccess = true))
+	USkeletalMeshComponent* WeaponMeshComp;
 
 	UPROPERTY(EditAnywhere, meta = (AllowPrivateAccess = true))
 	class UDataTable* CharacterDataTable;
 
 	UPROPERTY(EditAnywhere, meta = (AllowPrivateAccess = true))
-	int32 CharacterKey;
+	uint32 CharacterKey;
 
 	UPROPERTY(EditAnywhere, meta = (AllowPrivateAccess = true))
 	float BackConstant;
@@ -45,5 +46,5 @@ private:
 
 	float Weight;
 
-	int32 AppliedKey;
+	uint32 AppliedKey;
 };

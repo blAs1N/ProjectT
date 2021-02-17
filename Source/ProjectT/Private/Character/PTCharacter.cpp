@@ -5,7 +5,6 @@
 #include "Component/CompositeModelComponent.h"
 #include "Component/WeaponComponent.h"
 #include "Data/CharacterData.h"
-#include "Equipment/Weapon.h"
 #include "Library/AsyncLoad.h"
 
 APTCharacter::APTCharacter(const FObjectInitializer& ObjectInitializer)

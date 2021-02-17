@@ -46,11 +46,28 @@ float APTCharacter::TakeDamage(float Damage, const FDamageEvent&
 	return Damage;
 }
 
-void APTCharacter::OnConstruction(const FTransform& Transform)
+void APTCharacter::PostInitializeComponents()
 {
-	Super::OnConstruction(Transform);
+	Super::PostInitializeComponents();
 	Initialize();
 }
+
+#if WITH_EDITOR
+
+void APTCharacter::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
+{
+	Super::PostEditChangeProperty(PropertyChangedEvent);
+	if (!PropertyChangedEvent.Property) return;
+	
+	static const FName TableName = GET_MEMBER_NAME_CHECKED(APTCharacter, CharacterDataTable);
+	static const FName KeyName = GET_MEMBER_NAME_CHECKED(APTCharacter, CharacterKey);
+	const FName PropertyName = PropertyChangedEvent.GetPropertyName();
+	
+	if (PropertyName == TableName || PropertyName == KeyName)
+		Initialize();
+}
+
+#endif
 
 void APTCharacter::Initialize()
 {
@@ -60,7 +77,12 @@ void APTCharacter::Initialize()
 	AppliedKey = CharacterKey;
 	if (const auto* Data = CharacterDataTable->
 		FindRow<FCharacterData>(FName{ *FString::FromInt(AppliedKey) }, TEXT("")))
-	{
+	{	
+		auto* Level = GetLevel();
+		auto* World = GetWorld();
+
+		bool a = IsActorInitialized();
+		UE_LOG(LogTemp, Log, TEXT("Init: %s"), a ? TEXT("True") : TEXT("False"));
 		//Cast<UCompositeModelComponent>(GetMesh())->SetParam(Data->ModelParam);
 		GetMesh()->SetSkeletalMesh(Data->Mesh);
 		GetMesh()->SetAnimClass(Data->AnimClass);

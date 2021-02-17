@@ -22,7 +22,11 @@ public:
 	FORCEINLINE USkeletalMeshComponent* GetWeaponMeshComponent() const noexcept { return WeaponMeshComp; }
 
 private:
-	void OnConstruction(const FTransform& Transform) override;
+	void PostInitializeComponents() override;
+
+#if WITH_EDITOR
+	void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
+#endif
 
 	void Initialize();
 

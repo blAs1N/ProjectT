@@ -16,44 +16,8 @@ public:
 
 	void Initialize(uint32 Key);
 
-//	UFUNCTION(BlueprintCallable)
-//	void StartFire();
-//
-//	UFUNCTION(BlueprintCallable)
-//	void StopFire();
-//
-//	UFUNCTION(BlueprintCallable)
-//	void Reload();
-//
-//	FORCEINLINE int32 GetClip() const noexcept { return Clip; }
-//	FORCEINLINE uint8 GetAmmo() const noexcept { return Stat.Ammo; }
-//
-//	FORCEINLINE bool IsFiring() const noexcept { return bFiring; }
-//
-//private:
-//	void BeginPlay() override;
-//
-//	void Tick(float DeltaTime) override;
-//
-//	void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
-//
-//	UFUNCTION(Server, Reliable, WithValidation)
-//		void ServerStartFire();
-//
-//	UFUNCTION(Server, Reliable, WithValidation)
-//		void ServerStopFire();
-//
-//	UFUNCTION(Server, Reliable, WithValidation)
-//		void ServerReload();
-//
-//	UFUNCTION(NetMulticast, Reliable)
-//		void MulticastReload();
-//
-//	FORCEINLINE bool ServerStartFire_Validate() const noexcept { return !bFiring; }
-//	FORCEINLINE bool ServerStopFire_Validate() const noexcept { return bFiring; }
-//
-//	FORCEINLINE void ServerReload_Implementation() { return MulticastReload(); }
-//	FORCEINLINE bool ServerReload_Validate() const noexcept { return true; }
+private:
+	void OnLoadDataTable(const TSoftObjectPtr<class UDataTable>& DataTable);
 
 private:
 	UPROPERTY(EditDefaultsOnly, meta = (AllowPrivateAccess = true))

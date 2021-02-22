@@ -9,7 +9,8 @@
 template <class T, class Func>
 static void AsyncLoad(const TSoftObjectPtr<T>& SoftPtr, Func&& Fn)
 {
-	if (SoftPtr.IsNull()) return;
+	if (SoftPtr.IsNull())
+		return Fn(TSoftObjectPtr<T>{ nullptr });
 
 	if (SoftPtr.IsPending())
 	{

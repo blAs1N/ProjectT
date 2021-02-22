@@ -4,33 +4,45 @@
 #include "SkeletalMeshMerge.h"
 #include "Library/AsyncLoad.h"
 
-void UCompositeModelComponent::SetParam(const FCompositeModelParam& Param)
+void UCompositeModelComponent::SetParam(const FCompositeModelParam& InParam)
 {
-	if (GetOwner() == nullptr)
+	if (PieceNum > 0 || InParam.Skeleton.IsNull()) return;
+
+	Param = InParam;
+	Param.Pieces.RemoveAll([](auto Piece) {	return Piece.IsNull(); });
+
+	PieceNum = Param.Pieces.Num();
+	if (PieceNum == 0u) return;
+
+	AsyncLoad(Param.Skeleton, [this](auto Skeleton) { OnLoadSkeleton(Skeleton); });
+}
+
+void UCompositeModelComponent::OnLoadSkeleton(const TSoftObjectPtr<USkeleton>& Skeleton)
+{
+	check(Skeleton.IsValid());
+
+	TargetMesh = NewObject<USkeletalMesh>(this);
+	TargetMesh->Skeleton = Skeleton.Get();
+
+	for (auto Piece : Param.Pieces)
+		AsyncLoad(Piece, [this](auto Piece) { OnLoadPiece(Piece); });
+}
+
+void UCompositeModelComponent::OnLoadPiece(const TSoftObjectPtr<USkeletalMesh>& Piece)
+{
+	check(Piece.IsValid());
+
+	Pieces.Add(Piece.Get());
+	if (Pieces.Num() < PieceNum)
 		return;
-	
-	auto Pieces = Param.Pieces;
-	Pieces.RemoveAll([Skeleton = Param.Skeleton](const auto& Ptr)
-		{
-			if (!Ptr) return true;
-			if (Ptr->Skeleton != Skeleton)
-			{
-				UE_LOG(LogTemp, Warning, TEXT("%s's skeleton is not correct"), *Ptr->GetName());
-				return true;
-			}
-			return false;
-		});
 
-	if (Param.Pieces.Num() > 0)
-	{
-		auto TargetMesh = NewObject<USkeletalMesh>(this);
-		TargetMesh->Skeleton = Param.Skeleton;
-		
-		TArray<FSkelMeshMergeSectionMapping> sectionMappings;
-		FSkeletalMeshMerge merger{ TargetMesh, Pieces, sectionMappings, 0 };
+	TArray<FSkelMeshMergeSectionMapping> sectionMappings;
+	FSkeletalMeshMerge merger{ TargetMesh, Pieces, sectionMappings, 0 };
 
-		check(merger.DoMerge());
-		SetSkeletalMesh(TargetMesh);
-	}
-	else SetSkeletalMesh(nullptr);
+	check(merger.DoMerge());
+	SetSkeletalMesh(TargetMesh);
+	SetAnimClass(Param.AnimClass);
+
+	TargetMesh = nullptr;
+	Pieces.Empty();
 }

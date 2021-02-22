@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Engine/DataTable.h"
+#include "UObject/SoftObjectPtr.h"
 #include "Data/CompositeModelParam.h"
 #include "CharacterData.generated.h"
 
@@ -13,10 +14,7 @@ struct PROJECTT_API FCharacterData : public FTableRowBase
 	FText Name;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	USkeletalMesh* Mesh;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	TSubclassOf<UAnimInstance> AnimClass;
+	FCompositeModelParam ModelParam;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	float MeshZ;

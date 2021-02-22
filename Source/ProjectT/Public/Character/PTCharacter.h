@@ -31,19 +31,19 @@ private:
 	void Initialize();
 
 private:
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Weapon, meta = (AllowPrivateAccess = true))
 	UWeaponComponent* WeaponComp;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly,  meta = (AllowPrivateAccess = true))
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Weapon, meta = (AllowPrivateAccess = true))
 	USkeletalMeshComponent* WeaponMeshComp;
 
-	UPROPERTY(EditAnywhere, meta = (AllowPrivateAccess = true))
+	UPROPERTY(EditAnywhere, Category = Data, meta = (AllowPrivateAccess = true))
 	class UDataTable* CharacterDataTable;
 
-	UPROPERTY(EditAnywhere, meta = (AllowPrivateAccess = true))
+	UPROPERTY(EditAnywhere, Category = Data, meta = (AllowPrivateAccess = true))
 	uint32 CharacterKey;
 
-	UPROPERTY(EditAnywhere, meta = (AllowPrivateAccess = true))
+	UPROPERTY(EditAnywhere, Category = System, meta = (AllowPrivateAccess = true))
 	float BackConstant;
 
 	float BackPercent;

@@ -14,16 +14,18 @@ class PROJECTT_API UWeaponComponent final : public UActorComponent
 public:	
 	UWeaponComponent();
 
-	void Initialize(uint32 Key);
+	void Initialize(uint32 InKey);
 
 private:
 	void OnLoadDataTable(const TSoftObjectPtr<class UDataTable>& DataTable);
 
 private:
 	UPROPERTY(EditDefaultsOnly, meta = (AllowPrivateAccess = true))
-	class UDataTable* WeaponDataTable;
+	TSoftObjectPtr<UDataTable> WeaponDataTable;
 
 	const struct FWeaponStat* Stat;
 
+	uint32 Key;
 	uint32 Clip;
+	uint8 bLoadingAsset : 1;
 };

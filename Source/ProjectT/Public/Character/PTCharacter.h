@@ -22,13 +22,15 @@ public:
 	FORCEINLINE USkeletalMeshComponent* GetWeaponMeshComponent() const noexcept { return WeaponMeshComp; }
 
 private:
-	void PostInitializeComponents() override;
+	void PostInitProperties() override;
 
 #if WITH_EDITOR
 	void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
 #endif
 
 	void Initialize();
+
+	void OnLoadDataTable(const TSoftObjectPtr<class UDataTable>& DataTable);
 
 private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Weapon, meta = (AllowPrivateAccess = true))
@@ -38,7 +40,7 @@ private:
 	USkeletalMeshComponent* WeaponMeshComp;
 
 	UPROPERTY(EditAnywhere, Category = Data, meta = (AllowPrivateAccess = true))
-	class UDataTable* CharacterDataTable;
+	TSoftObjectPtr<UDataTable> CharacterDataTable;
 
 	UPROPERTY(EditAnywhere, Category = Data, meta = (AllowPrivateAccess = true))
 	uint32 CharacterKey;
@@ -53,4 +55,5 @@ private:
 	float Weight;
 
 	uint32 AppliedKey;
+	uint8 bLoadingAsset : 1;
 };

@@ -2,13 +2,14 @@
 
 #include "Character/PTCharacter.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "UObject/SoftObjectPtr.h"
 #include "Component/CompositeModelComponent.h"
 #include "Component/WeaponComponent.h"
 #include "Data/CharacterData.h"
 #include "Library/AsyncLoad.h"
 
 APTCharacter::APTCharacter(const FObjectInitializer& ObjectInitializer)
-	: Super(ObjectInitializer/*.SetDefaultSubobjectClass<UCompositeModelComponent>(MeshComponentName)*/)
+	: Super(ObjectInitializer.SetDefaultSubobjectClass<UCompositeModelComponent>(MeshComponentName))
 {
 	PrimaryActorTick.bCanEverTick = true;
 
@@ -46,9 +47,9 @@ float APTCharacter::TakeDamage(float Damage, const FDamageEvent&
 	return Damage;
 }
 
-void APTCharacter::PostInitializeComponents()
+void APTCharacter::PostInitProperties()
 {
-	Super::PostInitializeComponents();
+	Super::PostInitProperties();
 	Initialize();
 }
 
@@ -58,40 +59,46 @@ void APTCharacter::PostEditChangeProperty(FPropertyChangedEvent& PropertyChanged
 {
 	Super::PostEditChangeProperty(PropertyChangedEvent);
 	if (!PropertyChangedEvent.Property) return;
-	
-	static const FName TableName = GET_MEMBER_NAME_CHECKED(APTCharacter, CharacterDataTable);
+
+	static const FName DataTableName = GET_MEMBER_NAME_CHECKED(APTCharacter, CharacterDataTable);
 	static const FName KeyName = GET_MEMBER_NAME_CHECKED(APTCharacter, CharacterKey);
 	const FName PropertyName = PropertyChangedEvent.GetPropertyName();
 	
-	if (PropertyName == TableName || PropertyName == KeyName)
+	if (PropertyName == DataTableName || PropertyName == KeyName)
 		Initialize();
 }
-
 #endif
 
 void APTCharacter::Initialize()
 {
-	static const FCharacterData DefaultData{};
-	if (!CharacterDataTable || CharacterKey == AppliedKey) return;
+	if (!bLoadingAsset && CharacterKey != AppliedKey)
+	{
+		bLoadingAsset = true;
+		AppliedKey = CharacterKey;
 
-	AppliedKey = CharacterKey;
-	if (const auto* Data = CharacterDataTable->
-		FindRow<FCharacterData>(FName{ *FString::FromInt(AppliedKey) }, TEXT("")))
-	{	
-		auto* Level = GetLevel();
-		auto* World = GetWorld();
-
-		bool a = IsActorInitialized();
-		UE_LOG(LogTemp, Log, TEXT("Init: %s"), a ? TEXT("True") : TEXT("False"));
-		//Cast<UCompositeModelComponent>(GetMesh())->SetParam(Data->ModelParam);
-		GetMesh()->SetSkeletalMesh(Data->Mesh);
-		GetMesh()->SetAnimClass(Data->AnimClass);
-
-		GetMesh()->SetRelativeRotation(FRotator{ 0.0f, Data->MeshYaw, 0.0f });
-		GetMesh()->SetRelativeLocation(FVector{ 0.0f, 0.0f, Data->MeshZ });
-		
-		Weight = Data->Weight;
-
-		WeaponComp->Initialize(AppliedKey);
+		AsyncLoad(CharacterDataTable, [this](auto DataTable) { OnLoadDataTable(DataTable); });
 	}
+}
+
+void APTCharacter::OnLoadDataTable(const TSoftObjectPtr<class UDataTable>& DataTable)
+{
+	static const FCharacterData DefaultData{};
+	const auto* Data = &DefaultData;
+
+	if (DataTable.IsValid())
+	{
+		const auto* TempData = DataTable.Get()->FindRow
+			<FCharacterData>(FName{ *FString::FromInt(AppliedKey) }, TEXT(""));
+
+		if (TempData) Data = TempData;
+	}
+
+	Cast<UCompositeModelComponent>(GetMesh())->SetParam(Data->ModelParam);
+	GetMesh()->SetRelativeRotation(FRotator{ 0.0f, Data->MeshYaw, 0.0f });
+	GetMesh()->SetRelativeLocation(FVector{ 0.0f, 0.0f, Data->MeshZ });
+	
+	Weight = Data->Weight;
+	WeaponComp->Initialize(AppliedKey);
+
+	bLoadingAsset = false;
 }

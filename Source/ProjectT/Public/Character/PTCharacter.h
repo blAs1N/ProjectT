@@ -46,8 +46,10 @@ private:
 	UPROPERTY(EditAnywhere, Category = System, meta = (AllowPrivateAccess = true))
 	float BackConstant;
 
+	UPROPERTY(Transient, EditAnywhere, BlueprintReadOnly, Category = System, meta = (AllowPrivateAccess = true))
 	float BackPercent;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = System, meta = (AllowPrivateAccess = true))
 	float Weight;
 
 	uint32 AppliedKey;

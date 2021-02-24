@@ -14,12 +14,21 @@ UWeaponComponent::UWeaponComponent()
 
 void UWeaponComponent::Initialize(uint32 InKey)
 {
-	if (bLoadingAsset) return;
+	if (bLoadingAsset && WeaponDataTable.IsNull()) return;
 
 	bLoadingAsset = true;
 	Key = InKey;
 
-	AsyncLoad(WeaponDataTable, [this](auto DataTable) { OnLoadDataTable(DataTable); });
+	const bool bLoadAsync = ILoadable::Execute_IsLoadAsync(GetOwner());
+	if (bLoadAsync)
+	{
+		AsyncLoad(WeaponDataTable, [this](auto DataTable) { OnLoadDataTable(DataTable); });
+	}
+	else
+	{
+		WeaponDataTable.LoadSynchronous();
+		OnLoadDataTable(WeaponDataTable);
+	}
 }
 
 void UWeaponComponent::OnLoadDataTable(const TSoftObjectPtr<UDataTable>& DataTable)
@@ -38,11 +47,20 @@ void UWeaponComponent::OnLoadDataTable(const TSoftObjectPtr<UDataTable>& DataTab
 	const auto* Owner = Cast<APTCharacter>(GetOwner());
 	check(Owner);
 
+	const bool bLoadAsync = ILoadable::Execute_IsLoadAsync(Owner);
 	auto* const WeaponMesh = Owner->GetWeaponMeshComponent();
-	AsyncLoad(Data->Mesh, [WeaponMesh](const auto& Ptr)
-		{
-			WeaponMesh->SetSkeletalMesh(Ptr.Get());
-		});
+
+	if (bLoadAsync)
+	{
+		AsyncLoad(Data->Mesh, [WeaponMesh](const auto& Ptr)
+			{
+				WeaponMesh->SetSkeletalMesh(Ptr.Get());
+			});
+	}
+	else
+	{
+		WeaponMesh->SetSkeletalMesh(Data->Mesh.LoadSynchronous());
+	}
 
 	WeaponMesh->SetAnimClass(Data->AnimClass);
 	WeaponMesh->SetRelativeTransform(Data->Transform);

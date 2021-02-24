@@ -17,17 +17,22 @@ public:
 	void SetParam(const FCompositeModelParam& InParam);
 
 private:
+	void LoadSync();
+
 	void OnLoadSkeleton(const TSoftObjectPtr<USkeleton>& Skeleton);
 	void OnLoadPiece(const TSoftObjectPtr<USkeletalMesh>& Piece);
 
+	void Merge();
+
 private:
+	UPROPERTY(Transient)
+	FCompositeModelParam Param;
+
 	UPROPERTY(Transient)
 	TArray<USkeletalMesh*> Pieces;
 
-	UPROPERTY(Transient)
+	UPROPERTY()
 	USkeletalMesh* TargetMesh;
-
-	FCompositeModelParam Param;
 
 	int32 PieceNum;
 	uint8 bLoadingAsset : 1;

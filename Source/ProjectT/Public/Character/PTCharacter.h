@@ -8,7 +8,7 @@
 #include "PTCharacter.generated.h"
 
 UCLASS(config=Game)
-class PROJECTT_API APTCharacter : public ACharacter
+class PROJECTT_API APTCharacter final : public ACharacter, public ILoadable
 {
 	GENERATED_BODY()
 
@@ -31,6 +31,8 @@ private:
 	void Initialize();
 
 	void OnLoadDataTable(const TSoftObjectPtr<class UDataTable>& DataTable);
+
+	bool IsLoadAsync_Implementation() const noexcept { return bLoadAsync; }
 
 private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Weapon, meta = (AllowPrivateAccess = true))
@@ -56,4 +58,7 @@ private:
 
 	uint32 AppliedKey;
 	uint8 bLoadingAsset : 1;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Data, meta = (AllowPrivateAccess = true))
+	uint8 bLoadAsync : 1;
 };

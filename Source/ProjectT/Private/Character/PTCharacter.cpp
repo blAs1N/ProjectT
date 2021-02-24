@@ -48,9 +48,9 @@ float APTCharacter::TakeDamage(float Damage, const FDamageEvent&
 	return Damage;
 }
 
-void APTCharacter::PostInitProperties()
+void APTCharacter::PostInitializeComponents()
 {
-	Super::PostInitProperties();
+	Super::PostInitializeComponents();
 	Initialize();
 }
 

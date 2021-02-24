@@ -23,5 +23,11 @@ struct PROJECTT_API FCharacterData : public FTableRowBase
 	float MeshYaw;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	float CapsuleRadius;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	float CapsuleHalfHeight;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	float Weight;
 };

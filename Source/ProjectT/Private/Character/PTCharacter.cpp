@@ -97,6 +97,8 @@ void APTCharacter::OnLoadDataTable(const TSoftObjectPtr<class UDataTable>& DataT
 	GetMesh()->SetRelativeRotation(FRotator{ 0.0f, Data->MeshYaw, 0.0f });
 	GetMesh()->SetRelativeLocation(FVector{ 0.0f, 0.0f, Data->MeshZ });
 	
+	GetCapsuleComponent()->SetCapsuleSize(Data->CapsuleRadius, Data->CapsuleHalfHeight);
+
 	Weight = Data->Weight;
 	WeaponComp->Initialize(AppliedKey);
 

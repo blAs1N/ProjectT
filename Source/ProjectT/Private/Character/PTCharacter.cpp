@@ -1,6 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "Character/PTCharacter.h"
+#include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "UObject/SoftObjectPtr.h"
 #include "Component/CompositeModelComponent.h"
@@ -58,25 +59,25 @@ void APTCharacter::PostInitProperties()
 void APTCharacter::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
 {
 	Super::PostEditChangeProperty(PropertyChangedEvent);
-	if (!PropertyChangedEvent.Property) return;
-
-	static const FName DataTableName = GET_MEMBER_NAME_CHECKED(APTCharacter, CharacterDataTable);
-	static const FName KeyName = GET_MEMBER_NAME_CHECKED(APTCharacter, CharacterKey);
-	const FName PropertyName = PropertyChangedEvent.GetPropertyName();
-	
-	if (PropertyName == DataTableName || PropertyName == KeyName)
+	if (PropertyChangedEvent.Property)
 		Initialize();
 }
 #endif
 
 void APTCharacter::Initialize()
 {
-	if (!bLoadingAsset && CharacterKey != AppliedKey)
-	{
-		bLoadingAsset = true;
-		AppliedKey = CharacterKey;
+	if (bLoadingAsset || CharacterDataTable.IsNull())
+		return;
 
+	bLoadingAsset = true;
+	if (bLoadAsync)
+	{
 		AsyncLoad(CharacterDataTable, [this](auto DataTable) { OnLoadDataTable(DataTable); });
+	}
+	else
+	{
+		CharacterDataTable.LoadSynchronous();
+		OnLoadDataTable(CharacterDataTable);
 	}
 }
 
@@ -88,7 +89,7 @@ void APTCharacter::OnLoadDataTable(const TSoftObjectPtr<class UDataTable>& DataT
 	if (DataTable.IsValid())
 	{
 		const auto* TempData = DataTable.Get()->FindRow
-			<FCharacterData>(FName{ *FString::FromInt(AppliedKey) }, TEXT(""));
+			<FCharacterData>(FName{ *FString::FromInt(CharacterKey) }, TEXT(""));
 
 		if (TempData) Data = TempData;
 	}
@@ -100,7 +101,7 @@ void APTCharacter::OnLoadDataTable(const TSoftObjectPtr<class UDataTable>& DataT
 	GetCapsuleComponent()->SetCapsuleSize(Data->CapsuleRadius, Data->CapsuleHalfHeight);
 
 	Weight = Data->Weight;
-	WeaponComp->Initialize(AppliedKey);
+	WeaponComp->Initialize(CharacterKey);
 
 	bLoadingAsset = false;
 }

@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Engine/DataTable.h"
 #include "GameFramework/Character.h"
+#include "Interface/Loadable.h"
 #include "PTCharacter.generated.h"
 
 UCLASS(config=Game)
@@ -56,7 +57,6 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = System, meta = (AllowPrivateAccess = true))
 	float Weight;
 
-	uint32 AppliedKey;
 	uint8 bLoadingAsset : 1;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Data, meta = (AllowPrivateAccess = true))

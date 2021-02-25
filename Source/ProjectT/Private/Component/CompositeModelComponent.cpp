@@ -4,6 +4,7 @@
 #include "SkeletalMeshMerge.h"
 #include "Interface/Loadable.h"
 #include "Library/AsyncLoad.h"
+#include "MISC/MergeModelStorage.h"
 
 void UCompositeModelComponent::SetParam(const FCompositeModelParam& InParam)
 {
@@ -30,10 +31,11 @@ void UCompositeModelComponent::SetParam(const FCompositeModelParam& InParam)
 
 void UCompositeModelComponent::LoadSync()
 {
+	Skeleton = Param.Skeleton.LoadSynchronous();
 	for (const auto& Piece : Param.Pieces)
 	{
 		const auto RawPiece = Piece.LoadSynchronous();
-		if (RawPiece->Skeleton == Param.Skeleton)
+		if (RawPiece->Skeleton == Skeleton)
 			Pieces.Add(RawPiece);
 	}
 
@@ -43,29 +45,25 @@ void UCompositeModelComponent::LoadSync()
 		return;
 	}
 
-	TargetMesh = NewObject<USkeletalMesh>(this);
-	TargetMesh->Skeleton = Param.Skeleton.LoadSynchronous();
 	Merge();
 }
 
-void UCompositeModelComponent::OnLoadSkeleton(const TSoftObjectPtr<USkeleton>& Skeleton)
+void UCompositeModelComponent::OnLoadSkeleton(const TSoftObjectPtr<USkeleton>& InSkeleton)
 {
-	check(Skeleton.IsValid());
+	check(InSkeleton.IsValid());
 
-	TargetMesh = NewObject<USkeletalMesh>(this);
-	TargetMesh->Skeleton = Skeleton.Get();
-
+	Skeleton = InSkeleton.Get();
 	for (auto Piece : Param.Pieces)
 		AsyncLoad(Piece, [this](auto Piece) { OnLoadPiece(Piece); });
 }
 
-void UCompositeModelComponent::OnLoadPiece(const TSoftObjectPtr<USkeletalMesh>& Piece)
+void UCompositeModelComponent::OnLoadPiece(const TSoftObjectPtr<USkeletalMesh>& InPiece)
 {
-	check(Piece.IsValid());
+	check(InPiece.IsValid());
 
-	const auto PiecePtr = Piece.Get();
-	if (PiecePtr->Skeleton == Param.Skeleton)
-		Pieces.Add(PiecePtr);
+	const auto Piece = InPiece.Get();
+	if (Piece->Skeleton == Skeleton)
+		Pieces.Add(Piece);
 	else
 		--PieceNum;
 
@@ -80,14 +78,27 @@ void UCompositeModelComponent::OnLoadPiece(const TSoftObjectPtr<USkeletalMesh>& 
 }
 
 void UCompositeModelComponent::Merge()
-{
-	TArray<FSkelMeshMergeSectionMapping> sectionMappings;
-	FSkeletalMeshMerge merger{ TargetMesh, Pieces, sectionMappings, 0 };
+{	
+	auto Storage = Cast<UMergeModelStorage>(GEngine->GameSingleton);
 
-	check(merger.DoMerge());
-	SetSkeletalMesh(TargetMesh);
+	const auto Model = Storage ? Storage->
+		GetMergedModel(Skeleton, Pieces) : MergeDirect();
+
+	SetSkeletalMesh(Model);
 	SetAnimClass(Param.AnimClass);
 
-	//TargetMesh = nullptr;
 	Pieces.Empty();
+	Skeleton = nullptr;
+}
+
+USkeletalMesh* UCompositeModelComponent::MergeDirect()
+{
+	auto Model = NewObject<USkeletalMesh>(this);
+	Model->Skeleton = Skeleton;
+
+	TArray<FSkelMeshMergeSectionMapping> sectionMappings;
+	FSkeletalMeshMerge merger{ Model, Pieces, sectionMappings, 0 };
+
+	check(merger.DoMerge());
+	return Model;
 }

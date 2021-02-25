@@ -19,10 +19,11 @@ public:
 private:
 	void LoadSync();
 
-	void OnLoadSkeleton(const TSoftObjectPtr<USkeleton>& Skeleton);
-	void OnLoadPiece(const TSoftObjectPtr<USkeletalMesh>& Piece);
+	void OnLoadSkeleton(const TSoftObjectPtr<USkeleton>& InSkeleton);
+	void OnLoadPiece(const TSoftObjectPtr<USkeletalMesh>& InPiece);
 
 	void Merge();
+	USkeletalMesh* MergeDirect();
 
 private:
 	UPROPERTY(Transient)
@@ -31,8 +32,8 @@ private:
 	UPROPERTY(Transient)
 	TArray<USkeletalMesh*> Pieces;
 
-	UPROPERTY()
-	USkeletalMesh* TargetMesh;
+	UPROPERTY(Transient)
+	USkeleton* Skeleton;
 
 	int32 PieceNum;
 	uint8 bLoadingAsset : 1;

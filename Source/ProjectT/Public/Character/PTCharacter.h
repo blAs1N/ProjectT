@@ -23,7 +23,7 @@ public:
 	FORCEINLINE USkeletalMeshComponent* GetWeaponMeshComponent() const noexcept { return WeaponMeshComp; }
 
 private:
-	void PostInitializeComponents() override;
+	void PostActorCreated() override;
 
 #if WITH_EDITOR
 	void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;

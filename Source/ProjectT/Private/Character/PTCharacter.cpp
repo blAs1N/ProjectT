@@ -48,9 +48,11 @@ float APTCharacter::TakeDamage(float Damage, const FDamageEvent&
 	return Damage;
 }
 
-void APTCharacter::PostInitializeComponents()
+void APTCharacter::PostActorCreated()
 {
-	Super::PostInitializeComponents();
+	Super::PostActorCreated();
+
+	GetClass()->GetDefaultObject<APTCharacter>()->Initialize();
 	Initialize();
 }
 
@@ -62,6 +64,7 @@ void APTCharacter::PostEditChangeProperty(FPropertyChangedEvent& PropertyChanged
 	if (PropertyChangedEvent.Property)
 		Initialize();
 }
+
 #endif
 
 void APTCharacter::Initialize()

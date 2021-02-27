@@ -1,15 +1,17 @@
 #pragma once
 
+#include "Engine/DataTable.h"
+#include "UObject/SoftObjectPtr.h"
 #include "Data/WeaponStat.h"
 #include "WeaponData.generated.h"
 
 USTRUCT(Atomic, BlueprintType)
-struct PROJECTT_API FWeaponData
+struct PROJECTT_API FWeaponData : public FTableRowBase
 {
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	TAssetPtr<class USkeletalMesh> Mesh;
+	TSoftObjectPtr<class USkeletalMesh> Mesh;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TSubclassOf<class UAnimInstance> AnimClass;

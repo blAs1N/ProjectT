@@ -1,14 +1,15 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "Component/CompositeModelComponent.h"
-#include "SkeletalMeshMerge.h"
 #include "Interface/Loadable.h"
 #include "Library/AsyncLoad.h"
 #include "MISC/MergeModelStorage.h"
 
+UMergeModelStorage* UCompositeModelComponent::Storage = nullptr;
+
 void UCompositeModelComponent::SetParam(const FCompositeModelParam& InParam)
 {
-	if (PieceNum > 0 || InParam.Skeleton.IsNull())
+	if (InParam.Skeleton.IsNull())
 	{
 		SetSkeletalMesh(nullptr);
 		return;
@@ -79,26 +80,16 @@ void UCompositeModelComponent::OnLoadPiece(const TSoftObjectPtr<USkeletalMesh>& 
 
 void UCompositeModelComponent::Merge()
 {	
-	auto Storage = Cast<UMergeModelStorage>(GEngine->GameSingleton);
+	if (!IsValid(Storage))
+	{
+		Storage = NewObject<UMergeModelStorage>(this);
+		Storage->AddToRoot();
+	}
 
-	const auto Model = Storage ? Storage->
-		GetMergedModel(Skeleton, Pieces) : MergeDirect();
-
+	const auto Model = Storage->GetMergedModel(Skeleton, Pieces);
 	SetSkeletalMesh(Model);
 	SetAnimClass(Param.AnimClass);
 
 	Pieces.Empty();
 	Skeleton = nullptr;
-}
-
-USkeletalMesh* UCompositeModelComponent::MergeDirect()
-{
-	auto Model = NewObject<USkeletalMesh>(this);
-	Model->Skeleton = Skeleton;
-
-	TArray<FSkelMeshMergeSectionMapping> sectionMappings;
-	FSkeletalMeshMerge merger{ Model, Pieces, sectionMappings, 0 };
-
-	check(merger.DoMerge());
-	return Model;
 }

@@ -2,7 +2,7 @@
 
 #include "Component/CompositeModelComponent.h"
 #include "Interface/Loadable.h"
-#include "Library/AsyncLoad.h"
+#include "MISC/AsyncLoad.h"
 #include "MISC/MergeModelStorage.h"
 
 UMergeModelStorage* UCompositeModelComponent::Storage = nullptr;

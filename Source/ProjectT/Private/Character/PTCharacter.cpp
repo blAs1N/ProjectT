@@ -8,7 +8,7 @@
 #include "Component/WeaponComponent.h"
 #include "Component/WireComponent.h"
 #include "Data/CharacterData.h"
-#include "Library/AsyncLoad.h"
+#include "MISC/AsyncLoad.h"
 
 APTCharacter::APTCharacter(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer.SetDefaultSubobjectClass<UCompositeModelComponent>(MeshComponentName))

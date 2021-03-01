@@ -19,9 +19,15 @@ public:
 	float TakeDamage(float Damage, const FDamageEvent& DamageEvent,
 		AController* EventInstigator, AActor* DamageCauser) override;
 
+	FORCEINLINE FVector GetPawnViewLocation() const override { return GetViewLocation(); }
+
 	FORCEINLINE class UWireComponent* GetWireComponent() const noexcept { return WireComp; }
 	FORCEINLINE class UWeaponComponent* GetWeaponComponent() const noexcept { return WeaponComp; }
 	FORCEINLINE USkeletalMeshComponent* GetWeaponMeshComponent() const noexcept { return WeaponMeshComp; }
+
+protected:
+	UFUNCTION(BlueprintNativeEvent, BlueprintPure)
+	FVector GetViewLocation() const;
 
 private:
 	void PostActorCreated() override;
@@ -31,10 +37,10 @@ private:
 #endif
 
 	void Initialize();
-
 	void OnLoadDataTable(const TSoftObjectPtr<class UDataTable>& DataTable);
 
-	bool IsLoadAsync_Implementation() const noexcept { return bLoadAsync; }
+	FORCEINLINE FVector GetViewLocation_Implementation() const { return Super::GetPawnViewLocation(); }
+	FORCEINLINE bool IsLoadAsync_Implementation() const noexcept { return bLoadAsync; }
 
 private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Component, meta = (AllowPrivateAccess = true))

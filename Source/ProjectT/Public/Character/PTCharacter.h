@@ -19,6 +19,7 @@ public:
 	float TakeDamage(float Damage, const FDamageEvent& DamageEvent,
 		AController* EventInstigator, AActor* DamageCauser) override;
 
+	FORCEINLINE class UWireComponent* GetWireComponent() const noexcept { return WireComp; }
 	FORCEINLINE class UWeaponComponent* GetWeaponComponent() const noexcept { return WeaponComp; }
 	FORCEINLINE USkeletalMeshComponent* GetWeaponMeshComponent() const noexcept { return WeaponMeshComp; }
 
@@ -36,10 +37,13 @@ private:
 	bool IsLoadAsync_Implementation() const noexcept { return bLoadAsync; }
 
 private:
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Weapon, meta = (AllowPrivateAccess = true))
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Component, meta = (AllowPrivateAccess = true))
+	UWireComponent* WireComp;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Component, meta = (AllowPrivateAccess = true))
 	UWeaponComponent* WeaponComp;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Weapon, meta = (AllowPrivateAccess = true))
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Component, meta = (AllowPrivateAccess = true))
 	USkeletalMeshComponent* WeaponMeshComp;
 
 	UPROPERTY(EditAnywhere, Category = Data, meta = (AllowPrivateAccess = true))

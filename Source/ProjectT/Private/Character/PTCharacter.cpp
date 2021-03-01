@@ -6,6 +6,7 @@
 #include "UObject/SoftObjectPtr.h"
 #include "Component/CompositeModelComponent.h"
 #include "Component/WeaponComponent.h"
+#include "Component/WireComponent.h"
 #include "Data/CharacterData.h"
 #include "Library/AsyncLoad.h"
 
@@ -14,6 +15,7 @@ APTCharacter::APTCharacter(const FObjectInitializer& ObjectInitializer)
 {
 	PrimaryActorTick.bCanEverTick = true;
 
+	WireComp = CreateDefaultSubobject<UWireComponent>(TEXT("Wire"));
 	WeaponComp = CreateDefaultSubobject<UWeaponComponent>(TEXT("Weapon"));
 	WeaponMeshComp = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("WeaponMesh"));
 	WeaponMeshComp->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform);

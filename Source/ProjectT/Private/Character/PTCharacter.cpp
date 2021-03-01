@@ -84,6 +84,9 @@ void APTCharacter::Initialize()
 		CharacterDataTable.LoadSynchronous();
 		OnLoadDataTable(CharacterDataTable);
 	}
+
+	WireComp->Initialize(CharacterKey);
+	WeaponComp->Initialize(CharacterKey);
 }
 
 void APTCharacter::OnLoadDataTable(const TSoftObjectPtr<class UDataTable>& DataTable)
@@ -106,7 +109,5 @@ void APTCharacter::OnLoadDataTable(const TSoftObjectPtr<class UDataTable>& DataT
 	GetCapsuleComponent()->SetCapsuleSize(Data->CapsuleRadius, Data->CapsuleHalfHeight);
 
 	Weight = Data->Weight;
-	WeaponComp->Initialize(CharacterKey);
-
 	bLoadingAsset = false;
 }

@@ -3,10 +3,10 @@
 #include "Engine/DataTable.h"
 #include "UObject/SoftObjectPtr.h"
 #include "Data/CompositeModelParam.h"
-#include "WireData.generated.h"
+#include "HookData.generated.h"
 
 USTRUCT(Atomic, BlueprintType)
-struct PROJECTT_API FWireData : public FTableRowBase
+struct PROJECTT_API FHookData : public FTableRowBase
 {
 	GENERATED_BODY()
 

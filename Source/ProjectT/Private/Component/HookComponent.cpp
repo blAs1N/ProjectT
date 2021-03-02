@@ -1,24 +1,24 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-#include "Component/WireComponent.h"
+#include "Component/HookComponent.h"
 #include "Engine/DataTable.h"
 #include "GameFramework/Character.h"
 #include "Net/UnrealNetwork.h"
 #include "CableActor.h"
 #include "CableComponent.h"
-#include "Data/WireData.h"
+#include "Data/HookData.h"
 #include "Interface/Loadable.h"
 #include "MISC/AsyncLoad.h"
 
-UWireComponent::UWireComponent()
+UHookComponent::UHookComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
 	CableClass = ACableActor::StaticClass();
 }
 
-void UWireComponent::Initialize(uint32 InKey)
+void UHookComponent::Initialize(uint32 InKey)
 {
-	if (bLoadingAsset && WireDataTable.IsNull()) return;
+	if (bLoadingAsset && HookDataTable.IsNull()) return;
 
 	bLoadingAsset = true;
 	Key = InKey;
@@ -26,31 +26,31 @@ void UWireComponent::Initialize(uint32 InKey)
 	const bool bLoadAsync = ILoadable::Execute_IsLoadAsync(GetOwner());
 	if (bLoadAsync)
 	{
-		AsyncLoad(WireDataTable, [this](auto DataTable) { OnLoadDataTable(DataTable); });
+		AsyncLoad(HookDataTable, [this](auto DataTable) { OnLoadDataTable(DataTable); });
 	}
 	else
 	{
-		WireDataTable.LoadSynchronous();
-		OnLoadDataTable(WireDataTable);
+		HookDataTable.LoadSynchronous();
+		OnLoadDataTable(HookDataTable);
 	}
 }
 
-void UWireComponent::Hook()
+void UHookComponent::Hook()
 {
 	ServerHook();
 }
 
-void UWireComponent::Unhook()
+void UHookComponent::Unhook()
 {
 	ServerUnhook();
 }
 
-void UWireComponent::MoveTo()
+void UHookComponent::MoveTo()
 {
 	ServerMove();
 }
 
-void UWireComponent::BeginPlay()
+void UHookComponent::BeginPlay()
 {
 	Super::BeginPlay();
 	if (!GetOwner()->HasAuthority()) return;
@@ -63,7 +63,7 @@ void UWireComponent::BeginPlay()
 		SetCableMaterial();
 }
 
-void UWireComponent::TickComponent(float DeltaTime,
+void UHookComponent::TickComponent(float DeltaTime,
 	ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
@@ -88,17 +88,17 @@ void UWireComponent::TickComponent(float DeltaTime,
 	Cable->CableComponent->SetVisibility(bHooked, true);
 }
 
-void UWireComponent::GetLifetimeReplicatedProps
+void UHookComponent::GetLifetimeReplicatedProps
 	(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-	DOREPLIFETIME(UWireComponent, Cable);
+	DOREPLIFETIME(UHookComponent, Cable);
 }
 
-void UWireComponent::ServerHook_Implementation()
+void UHookComponent::ServerHook_Implementation()
 {
-	if (bUseWire || bHooked || !bCanHook) return;
+	if (bUseHook || bHooked || !bCanHook) return;
 
 	const auto Owner = Cast<ACharacter>(GetOwner());
 	check(Owner);
@@ -109,27 +109,27 @@ void UWireComponent::ServerHook_Implementation()
 	bHooked = true;
 }
 
-void UWireComponent::ServerUnhook_Implementation()
+void UHookComponent::ServerUnhook_Implementation()
 {
-	if (!bUseWire && bHooked)
+	if (!bUseHook && bHooked)
 		bHooked = false;
 }
 
-void UWireComponent::ServerMove_Implementation()
+void UHookComponent::ServerMove_Implementation()
 {
-	if (bUseWire || !bHooked)
+	if (bUseHook || !bHooked)
 		bMoved = true;
 }
 
-void UWireComponent::OnLoadDataTable(const TSoftObjectPtr<class UDataTable>& DataTable)
+void UHookComponent::OnLoadDataTable(const TSoftObjectPtr<class UDataTable>& DataTable)
 {
-	static const FWireData DefaultData{};
+	static const FHookData DefaultData{};
 	const auto* Data = &DefaultData;
 
 	if (DataTable.IsValid())
 	{
 		const auto* TempData = DataTable.Get()->FindRow
-			<FWireData>(FName{ *FString::FromInt(Key) }, TEXT(""));
+			<FHookData>(FName{ *FString::FromInt(Key) }, TEXT(""));
 
 		if (TempData) Data = TempData;
 	}
@@ -142,7 +142,7 @@ void UWireComponent::OnLoadDataTable(const TSoftObjectPtr<class UDataTable>& Dat
 	bLoadingAsset = false;
 }
 
-void UWireComponent::SetCableMaterial()
+void UHookComponent::SetCableMaterial()
 {
 	const bool bLoadAsync = ILoadable::Execute_IsLoadAsync(GetOwner());
 	if (bLoadAsync)
@@ -157,12 +157,12 @@ void UWireComponent::SetCableMaterial()
 	MaterialCache = nullptr;
 }
 
-void UWireComponent::Swing()
+void UHookComponent::Swing()
 {
 
 }
 
-void UWireComponent::Move()
+void UHookComponent::Move()
 {
 
 }

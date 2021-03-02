@@ -5,8 +5,8 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "UObject/SoftObjectPtr.h"
 #include "Component/CompositeModelComponent.h"
+#include "Component/HookComponent.h"
 #include "Component/WeaponComponent.h"
-#include "Component/WireComponent.h"
 #include "Data/CharacterData.h"
 #include "MISC/AsyncLoad.h"
 
@@ -15,7 +15,7 @@ APTCharacter::APTCharacter(const FObjectInitializer& ObjectInitializer)
 {
 	PrimaryActorTick.bCanEverTick = true;
 
-	WireComp = CreateDefaultSubobject<UWireComponent>(TEXT("Wire"));
+	HookComp = CreateDefaultSubobject<UHookComponent>(TEXT("Hook"));
 	WeaponComp = CreateDefaultSubobject<UWeaponComponent>(TEXT("Weapon"));
 	WeaponMeshComp = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("WeaponMesh"));
 	WeaponMeshComp->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform);
@@ -85,7 +85,7 @@ void APTCharacter::Initialize()
 		OnLoadDataTable(CharacterDataTable);
 	}
 
-	WireComp->Initialize(CharacterKey);
+	HookComp->Initialize(CharacterKey);
 	WeaponComp->Initialize(CharacterKey);
 }
 

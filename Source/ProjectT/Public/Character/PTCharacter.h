@@ -21,7 +21,7 @@ public:
 
 	FORCEINLINE FVector GetPawnViewLocation() const override { return GetViewLocation(); }
 
-	FORCEINLINE class UWireComponent* GetWireComponent() const noexcept { return WireComp; }
+	FORCEINLINE class UHookComponent* GetHookComponent() const noexcept { return HookComp; }
 	FORCEINLINE class UWeaponComponent* GetWeaponComponent() const noexcept { return WeaponComp; }
 	FORCEINLINE USkeletalMeshComponent* GetWeaponMeshComponent() const noexcept { return WeaponMeshComp; }
 
@@ -44,7 +44,7 @@ private:
 
 private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Component, meta = (AllowPrivateAccess = true))
-	UWireComponent* WireComp;
+	UHookComponent* HookComp;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Component, meta = (AllowPrivateAccess = true))
 	UWeaponComponent* WeaponComp;

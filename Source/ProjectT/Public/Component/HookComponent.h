@@ -4,15 +4,15 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
-#include "WireComponent.generated.h"
+#include "HookComponent.generated.h"
 
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
-class PROJECTT_API UWireComponent final : public UActorComponent
+class PROJECTT_API UHookComponent final : public UActorComponent
 {
 	GENERATED_BODY()
 
 public:
-	UWireComponent();
+	UHookComponent();
 
 	void Initialize(uint32 Key);
 
@@ -59,7 +59,7 @@ private:
 
 private:
 	UPROPERTY(EditDefaultsOnly, meta = (AllowPrivateAccess = true))
-	TSoftObjectPtr<UDataTable> WireDataTable;
+	TSoftObjectPtr<UDataTable> HookDataTable;
 
 	UPROPERTY(Transient)
 	TSoftObjectPtr<class UMaterialInterface> MaterialCache;
@@ -85,6 +85,6 @@ private:
 	uint8 bMoved : 1;
 	uint8 bHooked : 1;
 	uint8 bCanHook : 1;
-	uint8 bUseWire : 1;
+	uint8 bUseHook : 1;
 	uint8 bLoadingAsset : 1;
 };

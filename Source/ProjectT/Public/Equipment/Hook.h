@@ -6,6 +6,11 @@
 #include "GameFramework/Actor.h"
 #include "Hook.generated.h"
 
+enum class EHookState : uint8
+{
+	Idle, Throw, Hook, Move
+};
+
 UCLASS()
 class PROJECTT_API AHook final : public AActor
 {
@@ -14,11 +19,11 @@ class PROJECTT_API AHook final : public AActor
 public:
 	AHook();
 
-	void Initialize(const struct FHookData& Data);
+	void Initialize(const struct FHookData& Data, bool bLoadAsync);
 
-	FORCEINLINE void Hook() { ServerHook(); }
-	FORCEINLINE void Unhook() { ServerUnhook(); }
-	FORCEINLINE void MoveTo() { ServerMoveTo(); }
+	void Hook();
+	void Unhook();
+	void MoveTo();
 
 private:
 	void BeginPlay() override;
@@ -27,44 +32,42 @@ private:
 	void GetLifetimeReplicatedProps
 		(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
-	UFUNCTION(Server, Reliable, WithValidation)
-	void ServerHook();
-
-	UFUNCTION(Server, Reliable, WithValidation)
-	void ServerUnhook();
-
-	UFUNCTION(Server, Reliable, WithValidation)
-	void ServerMoveTo();
-
-	void ServerHook_Implementation();
-	void ServerUnhook_Implementation();
-	void ServerMoveTo_Implementation();
-
-	FORCEINLINE bool ServerHook_Validate() const noexcept { return true; }
-	FORCEINLINE bool ServerUnhook_Validate() const noexcept { return true; }
-	FORCEINLINE bool ServerMoveTo_Validate() const noexcept { return true; }
-
-	void SetHookState(bool bIsHooked);
+	void LoadAssets(const FHookData& Data, bool bLoadAsync);
+	void TraceHookTarget();
+	void CleanVariable();
 
 private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
-	class UProjectileMovementComponent* MovementComp;
+	class USceneComponent* RootComp;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
-	class UStaticMeshComponent* Hook;
+	class UStaticMeshComponent* HookMesh;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
 	class UCableComponent* Cable;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
-	class UAudioComponent* AudioComp;
+	class UProjectileMovementComponent* MovementComp;
+
+	UPROPERTY(EditDefaultsOnly, meta = (AllowPrivateAccess = true))
+	FName CollisionProfile;
 
 	UPROPERTY(Transient)
-	AActor* HookedTarget;
+	class USoundBase* ThrowSound;
 
-	FVector StartPoint;
+	UPROPERTY(Transient)
+	class USoundBase* PullSound;
 
-	uint8 bHooked : 1;
-	uint8 bMoving : 1;
-	uint8 bThrowing : 1;
+	UPROPERTY(Transient)
+	class UPrimitiveComponent* HookedTarget;
+
+	FVector FirstHookLocation;
+	FVector HookLocation;
+	FVector HookNormal;
+
+	float Distance;
+	float MaxMoveDuration;
+	float PenetrationOffset;
+
+	EHookState State;
 };

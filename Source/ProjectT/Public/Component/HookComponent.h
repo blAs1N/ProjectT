@@ -28,11 +28,13 @@ public:
 private:
 	void BeginPlay() override;
 
-	void TickComponent(float DeltaTime, ELevelTick TickType,
-		FActorComponentTickFunction* ThisTickFunction);
+	void GetLifetimeReplicatedProps(TArray
+		<FLifetimeProperty>& OutLifetimeProps) const override;
 
-	void GetLifetimeReplicatedProps
-		(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+	void OnLoadDataTable(const TSoftObjectPtr<class UDataTable>& DataTable);
+
+	UFUNCTION()
+	void OnRep_Hook();
 
 	UFUNCTION(Server, Reliable, WithValidation)
 	void ServerHook();
@@ -41,50 +43,26 @@ private:
 	void ServerUnhook();
 
 	UFUNCTION(Server, Reliable, WithValidation)
-	void ServerMove();
-
-	void ServerHook_Implementation();
-	void ServerUnhook_Implementation();
-	void ServerMove_Implementation();
+	void ServerMoveTo();
 
 	FORCEINLINE bool ServerHook_Validate() const noexcept { return true; }
 	FORCEINLINE bool ServerUnhook_Validate() const noexcept { return true; }
-	FORCEINLINE bool ServerMove_Validate() const noexcept { return true; }
+	FORCEINLINE bool ServerMoveTo_Validate() const noexcept { return true; }
 
-	void OnLoadDataTable(const TSoftObjectPtr<class UDataTable>& DataTable);
-	void SetCableMaterial();
-
-	void Swing();
-	void Move();
+	bool IsLoadAsync() const;
 
 private:
 	UPROPERTY(EditDefaultsOnly, meta = (AllowPrivateAccess = true))
 	TSoftObjectPtr<UDataTable> HookDataTable;
 
-	UPROPERTY(Transient)
-	TSoftObjectPtr<class UMaterialInterface> MaterialCache;
-
 	UPROPERTY(EditDefaultsOnly, meta = (AllowPrivateAccess = true))
-	TSubclassOf<class ACableActor> CableClass;
+	TSubclassOf<class AHook> HookClass;
 
-	UPROPERTY(Replicated)
-	ACableActor* Cable;
+	UPROPERTY(ReplicatedUsing = OnRep_Hook)
+	AHook* HookInst;
 	
-	UPROPERTY(EditDefaultsOnly, meta = (AllowPrivateAccess = true))
-	FName CollisionProfile;
-
-	FName HandSocket;
-
-	FVector Point;
-	FVector Normal;
-
-	float Distance;
-
+	const struct FHookData* Data;
 	uint32 Key;
 
-	uint8 bMoved : 1;
-	uint8 bHooked : 1;
-	uint8 bCanHook : 1;
-	uint8 bUseHook : 1;
 	uint8 bLoadingAsset : 1;
 };

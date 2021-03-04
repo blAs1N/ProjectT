@@ -7,13 +7,16 @@
 #include "CableActor.h"
 #include "CableComponent.h"
 #include "Data/HookData.h"
+#include "Equipment/Hook.h"
 #include "Interface/Loadable.h"
 #include "MISC/AsyncLoad.h"
 
 UHookComponent::UHookComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
-	CableClass = ACableActor::StaticClass();
+	SetIsReplicatedByDefault(true);
+
+	HookClass = AHook::StaticClass();
 }
 
 void UHookComponent::Initialize(uint32 InKey)
@@ -23,8 +26,7 @@ void UHookComponent::Initialize(uint32 InKey)
 	bLoadingAsset = true;
 	Key = InKey;
 
-	const bool bLoadAsync = ILoadable::Execute_IsLoadAsync(GetOwner());
-	if (bLoadAsync)
+	if (IsLoadAsync())
 	{
 		AsyncLoad(HookDataTable, [this](auto DataTable) { OnLoadDataTable(DataTable); });
 	}
@@ -47,7 +49,7 @@ void UHookComponent::Unhook()
 
 void UHookComponent::MoveTo()
 {
-	ServerMove();
+	ServerMoveTo();
 }
 
 void UHookComponent::BeginPlay()
@@ -57,35 +59,8 @@ void UHookComponent::BeginPlay()
 
 	FActorSpawnParameters Param;
 	Param.Owner = Param.Instigator = Cast<APawn>(GetOwner());
-	Cable = GetWorld()->SpawnActor<ACableActor>(CableClass, Param);
-
-	if (!MaterialCache.IsNull())
-		SetCableMaterial();
-}
-
-void UHookComponent::TickComponent(float DeltaTime,
-	ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
-{
-	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-	if (!Cable || !GetOwner()->HasAuthority()) return;
-
-	const auto Owner = Cast<ACharacter>(GetOwner());
-	check(Owner);
-
-	FVector Start; FRotator Dir;
-	GetOwner()->GetActorEyesViewPoint(Start, Dir);
-	const FVector End = Start + (Dir.Vector() * Distance);
-
-	FHitResult Result;
-	bCanHook = GetWorld()->LineTraceSingleByProfile(Result, Start, End, CollisionProfile);
-	Point = Result.ImpactPoint;
-	Normal = Result.ImpactNormal;
-
-	if (bMoved) Move();
-	else if (bHooked) Swing();
-	else Cable->SetActorLocation(Point);
-
-	Cable->CableComponent->SetVisibility(bHooked, true);
+	HookInst = GetWorld()->SpawnActor<AHook>(HookClass, Param);
+	OnRep_Hook();
 }
 
 void UHookComponent::GetLifetimeReplicatedProps
@@ -93,76 +68,57 @@ void UHookComponent::GetLifetimeReplicatedProps
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-	DOREPLIFETIME(UHookComponent, Cable);
+	DOREPLIFETIME(UHookComponent, HookInst);
+}
+
+void UHookComponent::OnRep_Hook()
+{
+	if (Data)
+	{
+		HookInst->Initialize(*Data, IsLoadAsync());
+		Data = nullptr;
+	}
 }
 
 void UHookComponent::ServerHook_Implementation()
 {
-	if (bUseHook || bHooked || !bCanHook) return;
-
-	const auto Owner = Cast<ACharacter>(GetOwner());
-	check(Owner);
-
-	const FVector HandLoc = Owner->GetMesh()->GetSocketLocation(HandSocket);
-	Cable->CableComponent->CableLength = FVector::Distance(HandLoc, Point);
-	Cable->CableComponent->SetAttachEndToComponent(Owner->GetMesh(), HandSocket);
-	bHooked = true;
+	check(HookInst);
+	HookInst->Hook();
 }
 
 void UHookComponent::ServerUnhook_Implementation()
 {
-	if (!bUseHook && bHooked)
-		bHooked = false;
+	check(HookInst);
+	HookInst->Unhook();
 }
 
-void UHookComponent::ServerMove_Implementation()
+void UHookComponent::ServerMoveTo_Implementation()
 {
-	if (bUseHook || !bHooked)
-		bMoved = true;
+	check(HookInst);
+	HookInst->MoveTo();
 }
 
 void UHookComponent::OnLoadDataTable(const TSoftObjectPtr<class UDataTable>& DataTable)
 {
 	static const FHookData DefaultData{};
-	const auto* Data = &DefaultData;
-
+	
 	if (DataTable.IsValid())
 	{
-		const auto* TempData = DataTable.Get()->FindRow
+		Data = DataTable.Get()->FindRow
 			<FHookData>(FName{ *FString::FromInt(Key) }, TEXT(""));
+	}
+	else Data = &DefaultData;
 
-		if (TempData) Data = TempData;
+	if (HookInst)
+	{
+		HookInst->Initialize(*Data, IsLoadAsync());
+		Data = nullptr;
 	}
 
-	MaterialCache = Data->Material;
-	if (Cable && !MaterialCache.IsNull()) SetCableMaterial();
-	
-	HandSocket = Data->HandSocket;
-	Distance = Data->Distance;
 	bLoadingAsset = false;
 }
 
-void UHookComponent::SetCableMaterial()
+bool UHookComponent::IsLoadAsync() const
 {
-	const bool bLoadAsync = ILoadable::Execute_IsLoadAsync(GetOwner());
-	if (bLoadAsync)
-	{
-		AsyncLoad(MaterialCache, [Cable = Cable](const auto& Ptr)
-			{
-				Cable->CableComponent->SetMaterial(0, Ptr.Get());
-			});
-	}
-	else Cable->CableComponent->SetMaterial(0, MaterialCache.LoadSynchronous());
-
-	MaterialCache = nullptr;
-}
-
-void UHookComponent::Swing()
-{
-
-}
-
-void UHookComponent::Move()
-{
-
+	return ILoadable::Execute_IsLoadAsync(GetOwner());
 }

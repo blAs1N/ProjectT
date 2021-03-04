@@ -18,7 +18,7 @@ APTCharacter::APTCharacter(const FObjectInitializer& ObjectInitializer)
 	HookComp = CreateDefaultSubobject<UHookComponent>(TEXT("Hook"));
 	WeaponComp = CreateDefaultSubobject<UWeaponComponent>(TEXT("Weapon"));
 	WeaponMeshComp = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("WeaponMesh"));
-	WeaponMeshComp->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform);
+	WeaponMeshComp->SetupAttachment(GetMesh());
 }
 
 float APTCharacter::TakeDamage(float Damage, const FDamageEvent&

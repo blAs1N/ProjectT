@@ -63,8 +63,7 @@ void APTCharacter::PostActorCreated()
 void APTCharacter::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
 {
 	Super::PostEditChangeProperty(PropertyChangedEvent);
-	if (PropertyChangedEvent.Property)
-		Initialize();
+	Initialize();
 }
 
 #endif

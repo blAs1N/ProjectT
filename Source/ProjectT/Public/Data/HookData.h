@@ -38,6 +38,9 @@ struct PROJECTT_API FHookData : public FTableRowBase
 	float Thickness;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	float HookTolerance;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	float MaxMoveDuration;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)

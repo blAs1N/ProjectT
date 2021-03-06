@@ -3,7 +3,6 @@
 #include "Equipment/Hook.h"
 #include "Components/StaticMeshComponent.h"
 #include "GameFramework/Character.h"
-#include "GameFramework/ProjectileMovementComponent.h"
 #include "CableComponent.h"
 #include "Data/HookData.h"
 #include "MISC/AsyncLoad.h"
@@ -12,22 +11,20 @@ AHook::AHook()
 {
 	PrimaryActorTick.bCanEverTick = true;
 
-	RootComp = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
-	RootComponent = RootComp;
+	RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
 
 	HookMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("HookMesh"));
-	HookMesh->SetupAttachment(RootComp);
+	HookMesh->SetupAttachment(RootComponent);
+	HookMesh->CastShadow = false;
 	HookMesh->SetCollisionProfileName(TEXT("NoCollision"));
+	HookMesh->SetRelativeRotation(FRotator{ -90.0f, 0.0f, 0.0f });
 
 	Cable = CreateDefaultSubobject<UCableComponent>(TEXT("Cable"));
-	Cable->SetupAttachment(RootComp);
+	Cable->SetupAttachment(HookMesh, EndPointSocket);
 	Cable->SetCollisionProfileName(TEXT("NoCollision"));
 	Cable->EndLocation = FVector::ZeroVector;
-
-	MovementComp = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("Movement"));
-	MovementComp->bAutoActivate = false;
-	MovementComp->bIsHomingProjectile = true;
-	MovementComp->ProjectileGravityScale = 0.0f;
+	Cable->CableLength = 0.0f;
+	Cable->CastShadow = false;
 }
 
 void AHook::Initialize(const FHookData& Data, bool bLoadAsync)
@@ -37,45 +34,77 @@ void AHook::Initialize(const FHookData& Data, bool bLoadAsync)
 
 	LoadAssets(Data, bLoadAsync);
 
-	HookMesh->SetRelativeTransform(Data.HookTransform);
-
-	Cable->CableWidth = Data.Thickness;
-	Cable->SetAttachEndToComponent(MyOwner->GetMesh(), Data.HandSocket);
-	AttachToComponent(MyOwner->GetMesh(), FAttachmentTransformRules
-		::SnapToTargetNotIncludingScale, Data.HandSocket);
-
-	MovementComp->InitialSpeed = MovementComp->MaxSpeed
-		= MovementComp->HomingAccelerationMagnitude = Data.Speed;
-
+	HandSocket = Data.HandSocket;
+	Speed = Data.Speed;
 	Distance = Data.Distance;
+	HookTolerance = Data.HookTolerance;
 	MaxMoveDuration = Data.MaxMoveDuration;
 	PenetrationOffset = Data.PenetrationOffset;
+
+	const FTransform DefaultTransform = GetClass()
+		->GetDefaultObject<AHook>()->HookMesh->GetRelativeTransform();
+
+	FTransform HookTransform = Data.HookTransform;
+	HookTransform *= DefaultTransform;
+	HookMesh->SetRelativeTransform(HookTransform);
+
+	Cable->CableWidth = Data.Thickness;
+	Cable->SetAttachEndToComponent(MyOwner->GetMesh(), HandSocket);
 }
 
 void AHook::Hook()
 {
 	if (State != EHookState::Idle) return;
 
+	const auto* MyOwner = Cast<ACharacter>(GetOwner());
+	check(MyOwner);
+
 	TraceHookTarget();
+
+	StartLoc = MyOwner->GetMesh()->
+		GetSocketLocation(HandSocket);
+
+	const FRotator Rot = FRotationMatrix::
+		MakeFromX(HookLoc - StartLoc).Rotator();
+
+	UE_LOG(LogTemp, Log, TEXT("Init: %s"), *StartLoc.ToString());
+	SetActorLocationAndRotation(StartLoc, Rot);
 
 	HookMesh->SetVisibility(true);
 	Cable->SetVisibility(true);
-	MovementComp->Activate();
 
 	State = EHookState::Throw;
 }
 
 void AHook::Unhook()
 {
-	if (State == EHookState::Hook)
-		CleanVariable();
+	if (State == EHookState::Swing)
+		Clear();
 }
 
 void AHook::MoveTo()
 {
-	if (State == EHookState::Hook)
+	if (State == EHookState::Swing)
 		State = EHookState::Move;
 }
+
+void AHook::PostActorCreated()
+{
+	Super::PostActorCreated();
+
+	GetClass()->GetDefaultObject<AHook>()->ApplyProperty();
+	ApplyProperty();
+}
+
+#if WITH_EDITOR
+
+void AHook::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
+{
+	Super::PostEditChangeProperty(PropertyChangedEvent);
+	ApplyProperty();
+}
+
+#endif
 
 void AHook::BeginPlay()
 {
@@ -88,7 +117,21 @@ void AHook::BeginPlay()
 void AHook::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
+	if (!GetOwner()->HasAuthority())
+		return;
 
+	switch (State)
+	{
+	case EHookState::Throw:
+		TickThrow(DeltaSeconds);
+		break;
+	case EHookState::Swing:
+		TickSwing(DeltaSeconds);
+		break;
+	case EHookState::Move:
+		TickMove(DeltaSeconds);
+		break;
+	}
 }
 
 void AHook::GetLifetimeReplicatedProps
@@ -96,6 +139,48 @@ void AHook::GetLifetimeReplicatedProps
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
+}
+
+void AHook::TickThrow(float DeltaSeconds)
+{
+	const float Dist = FVector::Distance(StartLoc, HookLoc);
+	const float MoveSpeed = Speed * (2.0f - (Dist / Distance));
+	const FVector NewLoc = FMath::Lerp(GetActorLocation(),
+		HookLoc + GetOffset(), DeltaSeconds * MoveSpeed);
+
+	UE_LOG(LogTemp, Log, TEXT("%s"), *NewLoc.ToString());
+	SetActorLocation(NewLoc);
+
+	const float TargetDist = FVector::DistSquared(NewLoc, HookLoc);
+	if (TargetDist < HookTolerance * HookTolerance) EndThrow(true);
+
+	const float HookDist = FVector::DistSquared(StartLoc, NewLoc);
+	if (HookDist > Distance * Distance) EndThrow(false);
+}
+
+void AHook::TickSwing(float DeltaSeconds)
+{
+
+}
+
+void AHook::TickMove(float DeltaSeconds)
+{
+
+}
+
+void AHook::EndThrow(bool bSuccess)
+{
+	if (!bSuccess)
+	{
+		Clear();
+		return;
+	}
+
+	SetActorLocationAndRotation(HookLoc + GetOffset(), HookRot);
+	AddActorLocalRotation(FRotator{ 180.0f, 0.0f, 0.0f });
+	AddActorLocalOffset(FVector{ PenetrationOffset, 0.0f, 0.0f });
+
+	State = EHookState::Swing;
 }
 
 void AHook::LoadAssets(const FHookData& Data, bool bLoadAsync)
@@ -136,32 +221,39 @@ void AHook::TraceHookTarget()
 	FVector Start; FRotator Dir;
 	GetOwner()->GetActorEyesViewPoint(Start, Dir);
 
-	HookLocation = Start + (Dir.Vector() * Distance);
+	HookLoc = Start + (Dir.Vector() * Distance);
 
 	FHitResult Result;
 	if (GetWorld()->LineTraceSingleByProfile
-		(Result, Start, HookLocation, CollisionProfile))
+		(Result, Start, HookLoc, CollisionProfile))
 	{
 		HookedTarget = Result.Component.Get();
-		MovementComp->HomingTargetComponent = Result.Component;
-
-		FirstHookLocation = HookedTarget->GetComponentLocation();
-		HookLocation = Result.Location;
-		HookNormal = Result.Normal;
+		FirstHookLoc = HookedTarget->GetComponentLocation();
+		HookLoc = Result.Location;
+		HookRot = FRotationMatrix::MakeFromX(Result.Normal).Rotator();
 	}
 }
 
-void AHook::CleanVariable()
+void AHook::ApplyProperty()
+{
+	Cable->AttachToComponent(HookMesh,
+		FAttachmentTransformRules::KeepRelativeTransform, EndPointSocket);
+}
+
+void AHook::Clear()
 {
 	HookMesh->SetVisibility(false);
 	Cable->SetVisibility(false);
 
-	HookMesh->SetRelativeLocationAndRotation
-		(FVector::ZeroVector, FQuat::Identity);
-
 	HookedTarget = nullptr;
-	FirstHookLocation = HookLocation
-		= HookNormal = FVector::ZeroVector;
+	FirstHookLoc = HookLoc = StartLoc = FVector::ZeroVector;
+	HookRot = FRotator::ZeroRotator;
 
 	State = EHookState::Idle;
+}
+
+FVector AHook::GetOffset() const noexcept
+{
+	if (!HookedTarget) return FVector::ZeroVector;
+	return HookedTarget->GetComponentLocation() - FirstHookLoc;
 }

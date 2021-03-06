@@ -26,31 +26,43 @@ public:
 	void MoveTo();
 
 private:
+	void PostActorCreated() override;
+
+#if WITH_EDITOR
+	void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
+#endif
+
 	void BeginPlay() override;
 	void Tick(float DeltaSeconds) override;
 
 	void GetLifetimeReplicatedProps
 		(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
+	void TickThrow(float DeltaSeconds);
+	void TickSwing(float DeltaSeconds);
+	void TickMove(float DeltaSeconds);
+
+	void EndThrow(bool bSuccess);
+
 	void LoadAssets(const FHookData& Data, bool bLoadAsync);
 	void TraceHookTarget();
-	void CleanVariable();
+	void ApplyProperty();
+	void Clear();
+
+	FVector GetOffset() const noexcept;
 
 private:
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
-	class USceneComponent* RootComp;
-
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
 	class UStaticMeshComponent* HookMesh;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
 	class UCableComponent* Cable;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
-	class UProjectileMovementComponent* MovementComp;
-
 	UPROPERTY(EditDefaultsOnly, meta = (AllowPrivateAccess = true))
 	FName CollisionProfile;
+
+	UPROPERTY(EditDefaultsOnly, meta = (AllowPrivateAccess = true))
+	FName EndPointSocket;
 
 	UPROPERTY(Transient)
 	class USoundBase* ThrowSound;
@@ -61,11 +73,17 @@ private:
 	UPROPERTY(Transient)
 	class UPrimitiveComponent* HookedTarget;
 
-	FVector FirstHookLocation;
-	FVector HookLocation;
-	FVector HookNormal;
+	FName HandSocket;
 
+	FVector FirstHookLoc;
+	FVector StartLoc;
+	FVector HookLoc;
+
+	FRotator HookRot;
+
+	float Speed;
 	float Distance;
+	float HookTolerance;
 	float MaxMoveDuration;
 	float PenetrationOffset;
 

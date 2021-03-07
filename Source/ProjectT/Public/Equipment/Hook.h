@@ -38,6 +38,7 @@ private:
 	void GetLifetimeReplicatedProps
 		(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
+	void TickIdle(float DeltaSeconds);
 	void TickThrow(float DeltaSeconds);
 	void TickSwing(float DeltaSeconds);
 	void TickMove(float DeltaSeconds);

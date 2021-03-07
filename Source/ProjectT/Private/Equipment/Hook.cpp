@@ -56,19 +56,12 @@ void AHook::Hook()
 {
 	if (State != EHookState::Idle) return;
 
-	const auto* MyOwner = Cast<ACharacter>(GetOwner());
-	check(MyOwner);
-
 	TraceHookTarget();
-
-	StartLoc = MyOwner->GetMesh()->
-		GetSocketLocation(HandSocket);
 
 	const FRotator Rot = FRotationMatrix::
 		MakeFromX(HookLoc - StartLoc).Rotator();
 
-	UE_LOG(LogTemp, Log, TEXT("Init: %s"), *StartLoc.ToString());
-	SetActorLocationAndRotation(StartLoc, Rot);
+	SetActorRotation(Rot);
 
 	HookMesh->SetVisibility(true);
 	Cable->SetVisibility(true);
@@ -78,7 +71,7 @@ void AHook::Hook()
 
 void AHook::Unhook()
 {
-	if (State == EHookState::Swing)
+	if (State == EHookState::Throw || State == EHookState::Swing)
 		Clear();
 }
 
@@ -122,6 +115,9 @@ void AHook::Tick(float DeltaSeconds)
 
 	switch (State)
 	{
+	case EHookState::Idle:
+		TickIdle(DeltaSeconds);
+		break;
 	case EHookState::Throw:
 		TickThrow(DeltaSeconds);
 		break;
@@ -141,21 +137,32 @@ void AHook::GetLifetimeReplicatedProps
 
 }
 
+void AHook::TickIdle(float DeltaSeconds)
+{
+	const auto* MyOwner = Cast<ACharacter>(GetOwner());
+	check(MyOwner);
+
+	StartLoc = MyOwner->GetMesh()->
+		GetSocketLocation(HandSocket);
+
+	SetActorLocation(StartLoc);
+}
+
 void AHook::TickThrow(float DeltaSeconds)
 {
 	const float Dist = FVector::Distance(StartLoc, HookLoc);
-	const float MoveSpeed = Speed * (2.0f - (Dist / Distance));
 	const FVector NewLoc = FMath::Lerp(GetActorLocation(),
-		HookLoc + GetOffset(), DeltaSeconds * MoveSpeed);
-
-	UE_LOG(LogTemp, Log, TEXT("%s"), *NewLoc.ToString());
+		HookLoc + GetOffset(), FMath::Min(DeltaSeconds * Speed, 1.0f));
+	
 	SetActorLocation(NewLoc);
 
 	const float TargetDist = FVector::DistSquared(NewLoc, HookLoc);
-	if (TargetDist < HookTolerance * HookTolerance) EndThrow(true);
-
 	const float HookDist = FVector::DistSquared(StartLoc, NewLoc);
-	if (HookDist > Distance * Distance) EndThrow(false);
+
+	if (TargetDist < HookTolerance * HookTolerance)
+		EndThrow(static_cast<bool>(HookedTarget));
+	else if (HookDist > Distance * Distance)
+		EndThrow(false);
 }
 
 void AHook::TickSwing(float DeltaSeconds)

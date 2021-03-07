@@ -10,6 +10,8 @@
 AHook::AHook()
 {
 	PrimaryActorTick.bCanEverTick = true;
+	bReplicates = true;
+	SetReplicateMovement(true);
 
 	RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
 
@@ -22,6 +24,7 @@ AHook::AHook()
 	Cable = CreateDefaultSubobject<UCableComponent>(TEXT("Cable"));
 	Cable->SetupAttachment(HookMesh, EndPointSocket);
 	Cable->SetCollisionProfileName(TEXT("NoCollision"));
+	Cable->bSkipCableUpdateWhenNotVisible = true;
 	Cable->EndLocation = FVector::ZeroVector;
 	Cable->CableLength = 0.0f;
 	Cable->CastShadow = false;
@@ -58,14 +61,18 @@ void AHook::Hook()
 
 	TraceHookTarget();
 
+	const auto* MyOwner = Cast<ACharacter>(GetOwner());
+	check(MyOwner);
+
+	StartLoc = MyOwner->GetMesh()->
+		GetSocketLocation(HandSocket);
+
 	const FRotator Rot = FRotationMatrix::
 		MakeFromX(HookLoc - StartLoc).Rotator();
-
-	SetActorRotation(Rot);
-
-	HookMesh->SetVisibility(true);
-	Cable->SetVisibility(true);
-
+	
+	SetActorLocationAndRotation(StartLoc, Rot);
+	MulticastSetVisibility(true);
+	
 	State = EHookState::Throw;
 }
 
@@ -102,9 +109,7 @@ void AHook::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
 void AHook::BeginPlay()
 {
 	Super::BeginPlay();
-
-	HookMesh->SetVisibility(false);
-	Cable->SetVisibility(false);
+	Clear();
 }
 
 void AHook::Tick(float DeltaSeconds)
@@ -115,9 +120,6 @@ void AHook::Tick(float DeltaSeconds)
 
 	switch (State)
 	{
-	case EHookState::Idle:
-		TickIdle(DeltaSeconds);
-		break;
 	case EHookState::Throw:
 		TickThrow(DeltaSeconds);
 		break;
@@ -137,15 +139,10 @@ void AHook::GetLifetimeReplicatedProps
 
 }
 
-void AHook::TickIdle(float DeltaSeconds)
+void AHook::MulticastSetVisibility_Implementation(bool bNewVisibility)
 {
-	const auto* MyOwner = Cast<ACharacter>(GetOwner());
-	check(MyOwner);
-
-	StartLoc = MyOwner->GetMesh()->
-		GetSocketLocation(HandSocket);
-
-	SetActorLocation(StartLoc);
+	HookMesh->SetVisibility(bNewVisibility);
+	Cable->SetVisibility(bNewVisibility);
 }
 
 void AHook::TickThrow(float DeltaSeconds)
@@ -249,8 +246,7 @@ void AHook::ApplyProperty()
 
 void AHook::Clear()
 {
-	HookMesh->SetVisibility(false);
-	Cable->SetVisibility(false);
+	MulticastSetVisibility(false);
 
 	HookedTarget = nullptr;
 	FirstHookLoc = HookLoc = StartLoc = FVector::ZeroVector;

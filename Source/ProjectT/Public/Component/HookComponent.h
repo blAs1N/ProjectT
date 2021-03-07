@@ -58,7 +58,7 @@ private:
 	UPROPERTY(EditDefaultsOnly, meta = (AllowPrivateAccess = true))
 	TSubclassOf<class AHook> HookClass;
 
-	UPROPERTY(ReplicatedUsing = OnRep_Hook)
+	UPROPERTY(Transient, ReplicatedUsing = OnRep_Hook)
 	AHook* HookInst;
 	
 	const struct FHookData* Data;

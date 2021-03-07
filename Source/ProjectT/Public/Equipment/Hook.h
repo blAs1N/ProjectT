@@ -38,7 +38,9 @@ private:
 	void GetLifetimeReplicatedProps
 		(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
-	void TickIdle(float DeltaSeconds);
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastSetVisibility(bool bNewVisibility);
+
 	void TickThrow(float DeltaSeconds);
 	void TickSwing(float DeltaSeconds);
 	void TickMove(float DeltaSeconds);

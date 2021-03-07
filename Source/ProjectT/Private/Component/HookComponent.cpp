@@ -73,11 +73,7 @@ void UHookComponent::GetLifetimeReplicatedProps
 
 void UHookComponent::OnRep_Hook()
 {
-	if (Data)
-	{
-		HookInst->Initialize(*Data, IsLoadAsync());
-		Data = nullptr;
-	}
+	if (Data) HookInst->Initialize(*Data, IsLoadAsync());
 }
 
 void UHookComponent::ServerHook_Implementation()

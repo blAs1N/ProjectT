@@ -1,8 +1,11 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "Equipment/Hook.h"
+#include "Components/CapsuleComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "GameFramework/Character.h"
+#include "GameFramework/CharacterMovementComponent.h"
+#include "Net/UnrealNetwork.h"
 #include "CableComponent.h"
 #include "Data/HookData.h"
 #include "MISC/AsyncLoad.h"
@@ -38,11 +41,14 @@ void AHook::Initialize(const FHookData& Data, bool bLoadAsync)
 	LoadAssets(Data, bLoadAsync);
 
 	HandSocket = Data.HandSocket;
+
 	Speed = Data.Speed;
 	Distance = Data.Distance;
-	HookTolerance = Data.HookTolerance;
+	BoostPower = Data.BoostPower;
+	MaxBoostPower = Data.MaxBoostPower;
 	MaxMoveDuration = Data.MaxMoveDuration;
 	PenetrationOffset = Data.PenetrationOffset;
+	EndMoveLaunchPower = Data.EndMoveLaunchPower;
 
 	const FTransform DefaultTransform = GetClass()
 		->GetDefaultObject<AHook>()->HookMesh->GetRelativeTransform();
@@ -61,12 +67,7 @@ void AHook::Hook()
 
 	TraceHookTarget();
 
-	const auto* MyOwner = Cast<ACharacter>(GetOwner());
-	check(MyOwner);
-
-	StartLoc = MyOwner->GetMesh()->
-		GetSocketLocation(HandSocket);
-
+	StartLoc = GetHandLoc();
 	const FRotator Rot = FRotationMatrix::
 		MakeFromX(HookLoc - StartLoc).Rotator();
 	
@@ -78,14 +79,26 @@ void AHook::Hook()
 
 void AHook::Unhook()
 {
-	if (State == EHookState::Throw || State == EHookState::Swing)
-		Clear();
+	if (State == EHookState::Idle) return;
+	
+	const auto MyOwner = Cast<ACharacter>(GetOwner());
+	check(MyOwner);
+
+	UE_LOG(LogTemp, Log, TEXT("%s"), *MyOwner->GetVelocity().ToString());
+	MyOwner->LaunchCharacter(MyOwner->GetVelocity(), true, true);
+	Clear();
 }
 
 void AHook::MoveTo()
 {
-	if (State == EHookState::Swing)
-		State = EHookState::Move;
+	if (State != EHookState::Swing) return;
+	
+	const auto MyOwner = Cast<ACharacter>(GetOwner());
+	check(MyOwner);
+
+	MyOwner->GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Flying);
+	StartLoc = MyOwner->GetActorLocation();
+	State = EHookState::Move;
 }
 
 void AHook::PostActorCreated()
@@ -109,7 +122,8 @@ void AHook::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
 void AHook::BeginPlay()
 {
 	Super::BeginPlay();
-	Clear();
+	if (GetOwner()->HasAuthority())
+		Clear();
 }
 
 void AHook::Tick(float DeltaSeconds)
@@ -132,17 +146,22 @@ void AHook::Tick(float DeltaSeconds)
 	}
 }
 
-void AHook::GetLifetimeReplicatedProps
-	(TArray<FLifetimeProperty>& OutLifetimeProps) const
+void AHook::GetLifetimeReplicatedProps(TArray
+	<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-
+	DOREPLIFETIME(AHook, Length);
 }
 
 void AHook::MulticastSetVisibility_Implementation(bool bNewVisibility)
 {
 	HookMesh->SetVisibility(bNewVisibility);
 	Cable->SetVisibility(bNewVisibility);
+}
+
+void AHook::OnRep_Length()
+{
+	Cable->CableLength = Length;
 }
 
 void AHook::TickThrow(float DeltaSeconds)
@@ -164,12 +183,62 @@ void AHook::TickThrow(float DeltaSeconds)
 
 void AHook::TickSwing(float DeltaSeconds)
 {
+	const auto* MyOwner = Cast<ACharacter>(GetOwner());
+	check(MyOwner);
 
+	float ForceCoef = FVector::Dist2D(GetHandLoc(), HookLoc) / Length;
+	ForceCoef = 1.0f - ForceCoef;
+	ForceCoef = FMath::Clamp(ForceCoef, 0.0f, 1.0f);
+
+	const FVector OwnerLoc = MyOwner->GetActorLocation();
+	const FVector OwnerVelocity = MyOwner->GetVelocity();
+
+	FVector Force; float Velocity;
+
+	if (OwnerLoc.Z < HookLoc.Z)
+	{
+		Force = OwnerLoc - HookLoc;
+		Velocity = OwnerVelocity | Force;
+		Force.Normalize();
+
+		MyOwner->GetCharacterMovement()->
+			AddForce(Force * Velocity * -2.0f * ForceCoef);
+
+		Velocity = OwnerVelocity.GetSafeNormal()
+			| MyOwner->GetControlRotation().Vector();
+
+		Velocity = ForceCoef * BoostPower * FMath::Clamp(Velocity, 0.0f, 1.0f);
+		Force = (OwnerVelocity * Velocity).GetClampedToMaxSize(MaxBoostPower);
+		MyOwner->GetCharacterMovement()->AddForce(Force);
+	}
+
+	Velocity = FMath::Max(FVector::Distance
+		(OwnerLoc, HookLoc) - Length, 0.0f) * 400.0f;
+	
+	Force = FRotationMatrix::MakeFromX(HookLoc - OwnerLoc).Rotator().Vector();
+	MyOwner->GetCharacterMovement()->AddImpulse(Force * Velocity);
 }
 
 void AHook::TickMove(float DeltaSeconds)
 {
+	const auto MyOwner = Cast<ACharacter>(GetOwner());
+	check(MyOwner);
 
+	const FVector TargetLoc = HookLoc + GetOffset();
+	const bool bComplete = FVector::DistSquared(MyOwner->
+		GetActorLocation(), TargetLoc) <= MoveTolerance * MoveTolerance;
+
+	if (bComplete)
+	{
+		Clear();
+		return;
+	}
+
+	TimeElapsed += DeltaSeconds;
+
+	const float BlendPct = TimeElapsed / MaxMoveDuration;
+	const FVector NewLoc = bComplete ? TargetLoc : FMath::Lerp(StartLoc, TargetLoc, BlendPct);
+	MyOwner->SetActorLocation(NewLoc);
 }
 
 void AHook::EndThrow(bool bSuccess)
@@ -180,10 +249,13 @@ void AHook::EndThrow(bool bSuccess)
 		return;
 	}
 
-	SetActorLocationAndRotation(HookLoc + GetOffset(), HookRot);
+	const FVector FinalLoc = HookLoc + GetOffset();
+	SetActorLocationAndRotation(FinalLoc, HookRot);
 	AddActorLocalRotation(FRotator{ 180.0f, 0.0f, 0.0f });
 	AddActorLocalOffset(FVector{ PenetrationOffset, 0.0f, 0.0f });
+	AttachToComponent(HookedTarget, FAttachmentTransformRules::KeepWorldTransform);
 
+	Cable->CableLength = Length = FVector::Distance(GetHandLoc(), FinalLoc);
 	State = EHookState::Swing;
 }
 
@@ -246,16 +318,36 @@ void AHook::ApplyProperty()
 
 void AHook::Clear()
 {
+	const auto MyOwner = Cast<ACharacter>(GetOwner());
+	check(MyOwner);
+
+	if (State == EHookState::Move)
+	{
+		const FVector Dir = MyOwner->GetActorLocation() - StartLoc;
+		MyOwner->LaunchCharacter(Dir * EndMoveLaunchPower, true, true);
+	}
+
+	DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+	MyOwner->GetCharacterMovement()->SetDefaultMovementMode();
 	MulticastSetVisibility(false);
 
 	HookedTarget = nullptr;
 	FirstHookLoc = HookLoc = StartLoc = FVector::ZeroVector;
 	HookRot = FRotator::ZeroRotator;
+	Length = TimeElapsed = 0.0f;
 
 	State = EHookState::Idle;
 }
 
-FVector AHook::GetOffset() const noexcept
+FVector AHook::GetHandLoc() const
+{
+	const auto* MyOwner = Cast<ACharacter>(GetOwner());
+	check(MyOwner);
+
+	return MyOwner->GetMesh()->GetSocketLocation(HandSocket);
+}
+
+FVector AHook::GetOffset() const
 {
 	if (!HookedTarget) return FVector::ZeroVector;
 	return HookedTarget->GetComponentLocation() - FirstHookLoc;

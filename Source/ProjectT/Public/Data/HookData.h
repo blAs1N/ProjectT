@@ -28,7 +28,7 @@ struct PROJECTT_API FHookData : public FTableRowBase
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	FName HandSocket;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (ClampMin = 0.1))
 	float Speed;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
@@ -38,11 +38,17 @@ struct PROJECTT_API FHookData : public FTableRowBase
 	float Thickness;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	float HookTolerance;
+	float BoostPower;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	float MaxBoostPower;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	float MaxMoveDuration;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	float PenetrationOffset;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	float EndMoveLaunchPower;
 };

@@ -35,11 +35,14 @@ private:
 	void BeginPlay() override;
 	void Tick(float DeltaSeconds) override;
 
-	void GetLifetimeReplicatedProps
-		(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+	void GetLifetimeReplicatedProps(TArray
+		<FLifetimeProperty>& OutLifetimeProps) const override;
 
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastSetVisibility(bool bNewVisibility);
+
+	UFUNCTION()
+	void OnRep_Length();
 
 	void TickThrow(float DeltaSeconds);
 	void TickSwing(float DeltaSeconds);
@@ -52,7 +55,8 @@ private:
 	void ApplyProperty();
 	void Clear();
 
-	FVector GetOffset() const noexcept;
+	FVector GetHandLoc() const;
+	FVector GetOffset() const;
 
 private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
@@ -84,11 +88,24 @@ private:
 
 	FRotator HookRot;
 
+	UPROPERTY(EditDefaultsOnly, meta = (AllowPrivateAccess = true))
+	float HookTolerance;
+
+	UPROPERTY(EditDefaultsOnly, meta = (AllowPrivateAccess = true))
+	float MoveTolerance;
+
+	UPROPERTY(Transient, ReplicatedUsing = OnRep_Length)
+	float Length;
+
+	float TimeElapsed;
+
 	float Speed;
 	float Distance;
-	float HookTolerance;
+	float BoostPower;
+	float MaxBoostPower;
 	float MaxMoveDuration;
 	float PenetrationOffset;
-
+	float EndMoveLaunchPower;
+	
 	EHookState State;
 };

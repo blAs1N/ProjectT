@@ -17,12 +17,6 @@ struct PROJECTT_API FHookData : public FTableRowBase
 	TSoftObjectPtr<class UMaterialInterface> CableMaterial;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	TSoftObjectPtr<class USoundBase> ThrowSound;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	TSoftObjectPtr<USoundBase> PullSound;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	FTransform HookTransform;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)

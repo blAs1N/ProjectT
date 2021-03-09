@@ -7,6 +7,8 @@
 #include "Data/CompositeModelParam.h"
 #include "CompositeModelComponent.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnSetMesh, const USkeletalMesh*, Mesh);
+
 UCLASS()
 class PROJECTT_API UCompositeModelComponent final : public USkeletalMeshComponent
 {
@@ -16,6 +18,8 @@ public:
 	UFUNCTION(BlueprintSetter)
 	void SetParam(const FCompositeModelParam& InParam);
 
+	void SetSkeletalMesh(USkeletalMesh* NewMesh, bool bReinitPose = true) override;
+
 private:
 	void LoadSync();
 
@@ -23,6 +27,10 @@ private:
 	void OnLoadPiece(const TSoftObjectPtr<USkeletalMesh>& InPiece);
 
 	void Merge();
+
+public:
+	UPROPERTY(BlueprintAssignable)
+	FOnSetMesh OnSetMesh;
 
 private:
 	UPROPERTY(Transient)

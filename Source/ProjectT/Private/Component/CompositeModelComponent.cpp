@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "Component/CompositeModelComponent.h"
-#include "Interface/Loadable.h"
+#include "Interface/Initializable.h"
 #include "MISC/AsyncLoad.h"
 #include "MISC/MergeModelStorage.h"
 
@@ -21,13 +21,19 @@ void UCompositeModelComponent::SetParam(const FCompositeModelParam& InParam)
 	PieceNum = Param.Pieces.Num();
 	if (PieceNum > 0)
 	{
-		const bool bLoadAsync = ILoadable::Execute_IsLoadAsync(GetOwner());
+		const bool bLoadAsync = IInitializable::Execute_IsLoadAsync(GetOwner());
 		if (bLoadAsync)
 			AsyncLoad(Param.Skeleton, [this](auto Skeleton) { OnLoadSkeleton(Skeleton); });
 		else
 			LoadSync();
 	}
 	else SetSkeletalMesh(nullptr);
+}
+
+void UCompositeModelComponent::SetSkeletalMesh(USkeletalMesh* NewMesh, bool bReinitPose)
+{
+	Super::SetSkeletalMesh(NewMesh, bReinitPose);
+	OnSetMesh.Broadcast(NewMesh);
 }
 
 void UCompositeModelComponent::LoadSync()

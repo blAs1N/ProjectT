@@ -8,7 +8,7 @@
 #include "Component/HookComponent.h"
 #include "Component/WeaponComponent.h"
 #include "Data/CharacterData.h"
-#include "MISC/AsyncLoad.h"
+#include "MISC/DataTableLoader.h"
 
 APTCharacter::APTCharacter(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer.SetDefaultSubobjectClass<UCompositeModelComponent>(MeshComponentName))
@@ -40,73 +40,32 @@ float APTCharacter::TakeDamage(float Damage, const FDamageEvent&
 		Dir.Normalize();
 	}
 
+	// Get knockback power (Referenced by smash brothers)
 	float Nnockback = 7.0f * (Damage + 2.0f) * (Damage + BackPercent);
 	Nnockback /= (Weight + 100.0f);
 	Nnockback *= 2.0f;
 	Nnockback += BackConstant;
 
-	GetCharacterMovement()->AddImpulse(Dir * Nnockback, true);
+	LaunchCharacter(Dir * Nnockback, true, true);
 	BackPercent += Damage;
 	return Damage;
 }
 
-void APTCharacter::PostActorCreated()
+void APTCharacter::OnInitialize(int32 Key)
 {
-	Super::PostActorCreated();
+	GetData<FCharacterData>(CharacterDataTable, Key,
+		[this](auto Data) { OnGetData(Data); }, bLoadAsync);
 
-	GetClass()->GetDefaultObject<APTCharacter>()->Initialize();
-	Initialize();
+	IInitializable::Execute_Initialize(HookComp, Key);
+	IInitializable::Execute_Initialize(WeaponComp, Key);
 }
 
-#if WITH_EDITOR
-
-void APTCharacter::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
+void APTCharacter::OnGetData(const FCharacterData& Data)
 {
-	Super::PostEditChangeProperty(PropertyChangedEvent);
-	Initialize();
-}
-
-#endif
-
-void APTCharacter::Initialize()
-{
-	if (bLoadingAsset || CharacterDataTable.IsNull())
-		return;
-
-	bLoadingAsset = true;
-	if (bLoadAsync)
-	{
-		AsyncLoad(CharacterDataTable, [this](auto DataTable) { OnLoadDataTable(DataTable); });
-	}
-	else
-	{
-		CharacterDataTable.LoadSynchronous();
-		OnLoadDataTable(CharacterDataTable);
-	}
-
-	HookComp->Initialize(CharacterKey);
-	WeaponComp->Initialize(CharacterKey);
-}
-
-void APTCharacter::OnLoadDataTable(const TSoftObjectPtr<class UDataTable>& DataTable)
-{
-	static const FCharacterData DefaultData{};
-	const auto* Data = &DefaultData;
-
-	if (DataTable.IsValid())
-	{
-		const auto* TempData = DataTable.Get()->FindRow
-			<FCharacterData>(FName{ *FString::FromInt(CharacterKey) }, TEXT(""));
-
-		if (TempData) Data = TempData;
-	}
-
-	Cast<UCompositeModelComponent>(GetMesh())->SetParam(Data->ModelParam);
-	GetMesh()->SetRelativeRotation(FRotator{ 0.0f, Data->MeshYaw, 0.0f });
-	GetMesh()->SetRelativeLocation(FVector{ 0.0f, 0.0f, Data->MeshZ });
+	Cast<UCompositeModelComponent>(GetMesh())->SetParam(Data.ModelParam);
+	GetMesh()->SetRelativeRotation(FRotator{ 0.0f, Data.MeshYaw, 0.0f });
+	GetMesh()->SetRelativeLocation(FVector{ 0.0f, 0.0f, Data.MeshZ });
 	
-	GetCapsuleComponent()->SetCapsuleSize(Data->CapsuleRadius, Data->CapsuleHalfHeight);
-
-	Weight = Data->Weight;
-	bLoadingAsset = false;
+	GetCapsuleComponent()->SetCapsuleSize(Data.CapsuleRadius, Data.CapsuleHalfHeight);
+	Weight = Data.Weight;
 }

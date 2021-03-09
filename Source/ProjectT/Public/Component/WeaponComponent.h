@@ -4,28 +4,23 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "Interface/Initializable.h"
 #include "WeaponComponent.generated.h"
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
-class PROJECTT_API UWeaponComponent final : public UActorComponent
+class PROJECTT_API UWeaponComponent final : public UActorComponent, public IInitializable
 {
 	GENERATED_BODY()
 
 public:	
 	UWeaponComponent();
 
-	void Initialize(uint32 InKey);
-
 private:
-	void OnLoadDataTable(const TSoftObjectPtr<class UDataTable>& DataTable);
+	void OnInitialize(int32 InKey) override;
 
 private:
 	UPROPERTY(EditDefaultsOnly, meta = (AllowPrivateAccess = true))
-	TSoftObjectPtr<UDataTable> WeaponDataTable;
+	TSoftObjectPtr<class UDataTable> WeaponDataTable;
 
-	const struct FWeaponStat* Stat;
-
-	uint32 Key;
-	uint32 Clip;
-	uint8 bLoadingAsset : 1;
+	int32 Key;
 };

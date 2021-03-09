@@ -4,17 +4,16 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "Interface/Initializable.h"
 #include "HookComponent.generated.h"
 
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
-class PROJECTT_API UHookComponent final : public UActorComponent
+class PROJECTT_API UHookComponent final : public UActorComponent, public IInitializable
 {
 	GENERATED_BODY()
 
 public:
 	UHookComponent();
-
-	void Initialize(uint32 Key);
 
 	UFUNCTION(BlueprintCallable)
 	void Hook();
@@ -27,11 +26,10 @@ public:
 
 private:
 	void BeginPlay() override;
+	void OnInitialize(int32 InKey) override;
 
 	void GetLifetimeReplicatedProps(TArray
 		<FLifetimeProperty>& OutLifetimeProps) const override;
-
-	void OnLoadDataTable(const TSoftObjectPtr<class UDataTable>& DataTable);
 
 	UFUNCTION()
 	void OnRep_Hook();
@@ -49,11 +47,9 @@ private:
 	FORCEINLINE bool ServerUnhook_Validate() const noexcept { return true; }
 	FORCEINLINE bool ServerMoveTo_Validate() const noexcept { return true; }
 
-	bool IsLoadAsync() const;
-
 private:
 	UPROPERTY(EditDefaultsOnly, meta = (AllowPrivateAccess = true))
-	TSoftObjectPtr<UDataTable> HookDataTable;
+	TSoftObjectPtr<class UDataTable> HookDataTable;
 
 	UPROPERTY(EditDefaultsOnly, meta = (AllowPrivateAccess = true))
 	TSubclassOf<class AHook> HookClass;
@@ -61,8 +57,5 @@ private:
 	UPROPERTY(Transient, ReplicatedUsing = OnRep_Hook)
 	AHook* HookInst;
 	
-	const struct FHookData* Data;
-	uint32 Key;
-
-	uint8 bLoadingAsset : 1;
+	int32 Key;
 };

@@ -1,6 +1,5 @@
 #pragma once
 
-#include "UObject/ObjectMacros.h"
 #include "UObject/SoftObjectPtr.h"
 #include "CompositeModelParam.generated.h"
 

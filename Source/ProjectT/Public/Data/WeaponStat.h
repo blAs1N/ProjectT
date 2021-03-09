@@ -1,6 +1,5 @@
 #pragma once
 
-#include "UObject/ObjectMacros.h"
 #include "WeaponStat.generated.h"
 
 USTRUCT(Atomic, BlueprintType)

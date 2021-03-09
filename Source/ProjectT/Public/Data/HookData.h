@@ -2,7 +2,7 @@
 
 #include "Engine/DataTable.h"
 #include "UObject/SoftObjectPtr.h"
-#include "Data/CompositeModelParam.h"
+#include "Data/HookStat.h"
 #include "HookData.generated.h"
 
 USTRUCT(Atomic, BlueprintType)
@@ -22,27 +22,9 @@ struct PROJECTT_API FHookData : public FTableRowBase
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	FName HandSocket;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (ClampMin = 0.1))
-	float Speed;
-
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	float Distance;
+	FHookStat Stat;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	float Thickness;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	float BoostPower;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	float MaxBoostPower;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	float MaxMoveDuration;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	float PenetrationOffset;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	float EndMoveLaunchPower;
 };

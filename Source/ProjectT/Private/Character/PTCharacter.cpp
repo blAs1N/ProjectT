@@ -30,12 +30,12 @@ float APTCharacter::TakeDamage(float Damage, const FDamageEvent&
 	FVector Dir;
 	if (DamageEvent.IsOfType(FPointDamageEvent::ClassID))
 	{
-		const auto& PointDamageEvent = reinterpret_cast<const FPointDamageEvent&>(DamageEvent);
+		const auto& PointDamageEvent = (const FPointDamageEvent&)DamageEvent;
 		Dir = PointDamageEvent.ShotDirection;
 	}
 	else if (DamageEvent.IsOfType(FRadialDamageEvent::ClassID))
 	{
-		const auto& RadialDamageEvent = reinterpret_cast<const FRadialDamageEvent&>(DamageEvent);
+		const auto& RadialDamageEvent = (const FRadialDamageEvent&)DamageEvent;
 		Dir = GetActorLocation() - RadialDamageEvent.Origin;
 		Dir.Normalize();
 	}

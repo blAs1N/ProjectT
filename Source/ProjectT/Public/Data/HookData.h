@@ -23,8 +23,8 @@ struct PROJECTT_API FHookData : public FTableRowBase
 	FName HandSocket;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	FHookStat Stat;
+	float Thickness;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	float Thickness;
+	FHookStat Stat;
 };

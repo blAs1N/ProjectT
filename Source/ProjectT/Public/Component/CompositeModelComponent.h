@@ -27,6 +27,7 @@ private:
 	void OnLoadPiece(const TSoftObjectPtr<USkeletalMesh>& InPiece);
 
 	void Merge();
+	USkeletalMesh* MergeDirect();
 
 public:
 	UPROPERTY(BlueprintAssignable)
@@ -42,8 +43,5 @@ private:
 	UPROPERTY(Transient)
 	USkeleton* Skeleton;
 
-	static class UMergeModelStorage* Storage;
-
 	int32 PieceNum;
-	uint8 bLoadingAsset : 1;
 };

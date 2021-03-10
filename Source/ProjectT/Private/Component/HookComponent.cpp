@@ -44,6 +44,9 @@ void UHookComponent::BeginPlay()
 void UHookComponent::OnInitialize(int32 InKey)
 {
 	Key = InKey;
+
+	if (HookInst && GetOwner()->HasAuthority())
+		OnRep_Hook();
 }
 
 void UHookComponent::GetLifetimeReplicatedProps
@@ -58,7 +61,8 @@ void UHookComponent::OnRep_Hook()
 	const bool bLoadAsync = IInitializable::Execute_IsLoadAsync(GetOwner());
 	GetData<FHookData>(HookDataTable, Key, [this, bLoadAsync](auto Data)
 		{
-			if (HookInst) HookInst->Initialize(Data, bLoadAsync);
+			if (HookInst)
+				HookInst->Initialize(Data, bLoadAsync);
 		}, bLoadAsync);
 }
 

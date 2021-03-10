@@ -16,8 +16,8 @@
 AHook::AHook()
 {
 	PrimaryActorTick.bCanEverTick = true;
-	bReplicates = true;
 	SetReplicateMovement(true);
+	bReplicates = true;
 
 	RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
 
@@ -107,9 +107,11 @@ void AHook::SetState(EHookState NewState)
 
 FVector AHook::GetHookLocation() const
 {
-	if (!HookedTarget) return HookLoc;
+	if (!HookedTarget)
+		return HookLoc;
 
-	return HookLoc + HookedTarget->GetComponentLocation() - FirstTargetLoc;
+	return HookLoc + HookedTarget->
+		GetComponentLocation() - FirstTargetLoc;
 }
 
 FVector AHook::GetHandLocation() const
@@ -128,30 +130,33 @@ void AHook::BeginPlay()
 	Cable->AttachToComponent(HookMesh,
 		FAttachmentTransformRules::KeepRelativeTransform, EndPointSocket);
 
-	if (GetOwner() && GetOwner()->HasAuthority())
-		AllocateState();
+	if (const auto* MyOwner = GetOwner())
+		if (MyOwner->GetLocalRole() >= ROLE_AutonomousProxy)
+			AllocateState();
 }
 
 void AHook::SetOwner(AActor* NewOwner)
 {
 	Super::SetOwner(NewOwner);
-	if (!NewOwner) return;
-
-	AllocateState();
 	OnRep_Owner();
+
+	if (NewOwner && NewOwner->GetLocalRole() >= ROLE_AutonomousProxy)
+		AllocateState();
 }
 
 void AHook::OnRep_Owner()
 {
-	Cable->SetAttachEndToComponent(GetOwner
-		<ACharacter>()->GetMesh(), HandSocket);
+	if (const auto MyOwner = GetOwner<ACharacter>())
+		Cable->SetAttachEndToComponent(MyOwner->GetMesh(), HandSocket);
+	else
+		Cable->SetAttachEndToComponent(nullptr);
 }
 
 void AHook::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 
-	if (GetOwner() && GetOwner()->HasAuthority())
+	if (GetLocalRole() >= ROLE_AutonomousProxy)
 		States[static_cast<uint8>(State)]->Tick(DeltaSeconds);
 }
 

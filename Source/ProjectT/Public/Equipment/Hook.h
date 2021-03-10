@@ -4,11 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "Data/HookStat.h"
+#include "Equipment/State/StateBase.h"
 #include "Hook.generated.h"
 
 enum class EHookState : uint8
 {
-	Idle, Throw, Swing, Move
+	Idle, Throw, Swing, Move, Max
 };
 
 UCLASS()
@@ -25,38 +27,39 @@ public:
 	void Unhook();
 	void MoveTo();
 
+	void TraceHookTarget();
+	void SetState(EHookState NewState);
+
+	FVector GetHookLocation() const;
+	FVector GetHandLocation() const;
+
+	FORCEINLINE void SetVisibility(bool bNewVisibility) { MulticastSetVisibility(bNewVisibility); }
+	FORCEINLINE void SetLength(float NewLength) { MulticastSetLength(NewLength); }
+
+	FORCEINLINE class UPrimitiveComponent* GetHookedTarget() const noexcept { return HookedTarget; }
+	FORCEINLINE FRotator GetHookRotation() const noexcept { return HookRot; }
+
+	FORCEINLINE float GetHookTolerance() const noexcept { return HookTolerance; }
+	FORCEINLINE float GetMoveTolerance() const noexcept { return MoveTolerance; }
+	FORCEINLINE float GetLength() const noexcept { return Length; }
+
+	FORCEINLINE const FHookStat& GetStat() const noexcept { return Stat; }
+
 private:
-	void PostActorCreated() override;
-
-#if WITH_EDITOR
-	void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
-#endif
-
 	void BeginPlay() override;
-	void Tick(float DeltaSeconds) override;
 
-	void GetLifetimeReplicatedProps(TArray
-		<FLifetimeProperty>& OutLifetimeProps) const override;
+	void SetOwner(AActor* NewOwner) override;
+	void OnRep_Owner() override;
+	void Tick(float DeltaSeconds) override;
 
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastSetVisibility(bool bNewVisibility);
 
-	UFUNCTION()
-	void OnRep_Length();
-
-	void TickThrow(float DeltaSeconds);
-	void TickSwing(float DeltaSeconds);
-	void TickMove(float DeltaSeconds);
-
-	void EndThrow(bool bSuccess);
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastSetLength(float NewLength);
 
 	void LoadAssets(const FHookData& Data, bool bLoadAsync);
-	void TraceHookTarget();
-	void ApplyProperty();
-	void Clear();
-
-	FVector GetHandLoc() const;
-	FVector GetOffset() const;
+	void AllocateState();
 
 private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
@@ -71,21 +74,15 @@ private:
 	UPROPERTY(EditDefaultsOnly, meta = (AllowPrivateAccess = true))
 	FName EndPointSocket;
 
-	UPROPERTY(Transient)
-	class USoundBase* ThrowSound;
+	TArray<TUniquePtr<class FStateBase>> States;
 
 	UPROPERTY(Transient)
-	class USoundBase* PullSound;
-
-	UPROPERTY(Transient)
-	class UPrimitiveComponent* HookedTarget;
+	UPrimitiveComponent* HookedTarget;
 
 	FName HandSocket;
 
-	FVector FirstHookLoc;
-	FVector StartLoc;
+	FVector FirstTargetLoc;
 	FVector HookLoc;
-
 	FRotator HookRot;
 
 	UPROPERTY(EditDefaultsOnly, meta = (AllowPrivateAccess = true))
@@ -94,18 +91,8 @@ private:
 	UPROPERTY(EditDefaultsOnly, meta = (AllowPrivateAccess = true))
 	float MoveTolerance;
 
-	UPROPERTY(Transient, ReplicatedUsing = OnRep_Length)
+	FHookStat Stat;
 	float Length;
 
-	float TimeElapsed;
-
-	float Speed;
-	float Distance;
-	float BoostPower;
-	float MaxBoostPower;
-	float MaxMoveDuration;
-	float PenetrationOffset;
-	float EndMoveLaunchPower;
-	
 	EHookState State;
 };

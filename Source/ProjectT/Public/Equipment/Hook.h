@@ -10,7 +10,7 @@
 
 enum class EHookState : uint8
 {
-	Idle, Throw, Swing, Move, Max
+	Idle, Throw, Swing, Move
 };
 
 UCLASS()

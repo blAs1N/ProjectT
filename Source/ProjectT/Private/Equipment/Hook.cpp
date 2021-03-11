@@ -16,8 +16,8 @@
 AHook::AHook()
 {
 	PrimaryActorTick.bCanEverTick = true;
-	bReplicates = true;
 	SetReplicateMovement(true);
+	bReplicates = true;
 
 	RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
 
@@ -50,25 +50,25 @@ void AHook::Initialize(const FHookData& Data, bool bLoadAsync)
 	HookMesh->SetRelativeTransform(HookTransform);
 	Cable->CableWidth = Data.Thickness;
 
-	if (GetOwner())
-		OnRep_Owner();
+	if (const auto MyOwner = GetOwner<ACharacter>())
+		Cable->SetAttachEndToComponent(MyOwner->GetMesh(), HandSocket);
 }
 
 void AHook::Hook()
 {
-	if (State == EHookState::Idle)
+	if (GetOwner() && State == EHookState::Idle)
 		SetState(EHookState::Throw);
 }
 
 void AHook::Unhook()
 {
-	if (State != EHookState::Idle)
+	if (GetOwner() && State != EHookState::Idle)
 		SetState(EHookState::Idle);
 }
 
 void AHook::MoveTo()
 {
-	if (State == EHookState::Swing)
+	if (GetOwner() && State == EHookState::Swing)
 		SetState(EHookState::Move);
 }
 
@@ -98,8 +98,6 @@ void AHook::TraceHookTarget()
 
 void AHook::SetState(EHookState NewState)
 {
-	if (!GetOwner()) return;
-	
 	States[static_cast<uint8>(State)]->Exit();
 	States[static_cast<uint8>(NewState)]->Enter();
 	State = NewState;
@@ -107,9 +105,11 @@ void AHook::SetState(EHookState NewState)
 
 FVector AHook::GetHookLocation() const
 {
-	if (!HookedTarget) return HookLoc;
+	if (!HookedTarget)
+		return HookLoc;
 
-	return HookLoc + HookedTarget->GetComponentLocation() - FirstTargetLoc;
+	return HookLoc + HookedTarget->
+		GetComponentLocation() - FirstTargetLoc;
 }
 
 FVector AHook::GetHandLocation() const
@@ -128,31 +128,36 @@ void AHook::BeginPlay()
 	Cable->AttachToComponent(HookMesh,
 		FAttachmentTransformRules::KeepRelativeTransform, EndPointSocket);
 
-	if (GetOwner() && GetOwner()->HasAuthority())
+	if (GetLocalRole() >= ROLE_AutonomousProxy)
 		AllocateState();
 }
 
 void AHook::SetOwner(AActor* NewOwner)
 {
 	Super::SetOwner(NewOwner);
-	if (!NewOwner) return;
-
-	AllocateState();
 	OnRep_Owner();
+
+	if (GetLocalRole() >= ROLE_AutonomousProxy)
+		AllocateState();
 }
 
 void AHook::OnRep_Owner()
 {
-	Cable->SetAttachEndToComponent(GetOwner
-		<ACharacter>()->GetMesh(), HandSocket);
+	if (const auto MyOwner = GetOwner<ACharacter>())
+	{
+		Cable->SetAttachEndToComponent(MyOwner->GetMesh(), HandSocket);
+		SetRole(MyOwner->GetLocalRole());
+	}
+	else SetRole(ROLE_None);
 }
 
 void AHook::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 
-	if (GetOwner() && GetOwner()->HasAuthority())
-		States[static_cast<uint8>(State)]->Tick(DeltaSeconds);
+	const uint8 Idx = static_cast<uint8>(State);
+	if (States.IsValidIndex(Idx))
+		States[Idx]->Tick(DeltaSeconds);
 }
 
 void AHook::MulticastSetVisibility_Implementation(bool bNewVisibility)

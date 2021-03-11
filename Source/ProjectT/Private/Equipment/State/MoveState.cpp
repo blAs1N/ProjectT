@@ -4,6 +4,7 @@
 #include "GameFramework/Character.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Equipment/Hook.h"
+#include "Kismet/KismetSystemLibrary.h"
 
 void FMoveState::Enter()
 {
@@ -35,9 +36,37 @@ void FMoveState::Tick(float DeltaSeconds)
 
 	TimeElapsed += DeltaSeconds;
 
-	const float MaxMoveDuration = Hook->GetStat().MaxMoveDuration;
 	const float BlendPct = MaxMoveDuration > 0.0f ? TimeElapsed / MaxMoveDuration : 1.0f;
-	const FVector NewLoc = bComplete ? HookLoc : FMath::Lerp(StartLoc, HookLoc, BlendPct);
+	FVector NewLoc = bComplete ? HookLoc : FMath::Lerp(StartLoc, HookLoc, BlendPct);
+	
+	FCollisionQueryParams Param;
+	Param.AddIgnoredActor(Hook);
+	Param.AddIgnoredActor(Target);
+
+	const FVector MeshLoc = Target->GetMesh()->GetComponentLocation();
+	const FVector DiffZ = FVector{ 0.0f, 0.0f, Target->GetActorLocation().Z - MeshLoc.Z };
+	const auto World = Hook->GetWorld();
+
+	TArray<AActor*> Ignores{ Hook, Target };
+
+	FHitResult Result;
+	const bool bHit = UKismetSystemLibrary::LineTraceSingle(World, MeshLoc, NewLoc - DiffZ,
+		ETraceTypeQuery::TraceTypeQuery1, false, Ignores, EDrawDebugTrace::None, Result, false);
+	/*const bool bHit = World->LineTraceSingleByChannel(Result,
+		MeshLoc, NewLoc - DiffZ, ECollisionChannel::ECC_Visibility, Param);*/
+
+	if (bHit)
+	{
+		UKismetSystemLibrary::LineTraceSingle(World, NewLoc - DiffZ, NewLoc - DiffZ + FVector{ 0.0f, 0.0f, 100.0f },
+			ETraceTypeQuery::TraceTypeQuery1, false, Ignores, EDrawDebugTrace::ForDuration, Result, false);
+
+		World->LineTraceSingleByChannel(Result, NewLoc - DiffZ, NewLoc - DiffZ +
+			FVector{ 0.0f, 0.0f, 100.0f }, ECollisionChannel::ECC_Visibility, Param);
+
+		
+		NewLoc = Result.Location + DiffZ;
+	}
+
 	Target->SetActorLocation(NewLoc);
 }
 

@@ -19,10 +19,13 @@ void FMoveState::Tick(float DeltaSeconds)
 	const auto Hook = GetOwner<AHook>();
 	const auto Target = Hook->GetOwner<ACharacter>();
 
+	const float MaxMoveDuration = Hook->GetStat().MaxMoveDuration;
 	const float MoveTolerance = Hook->GetMoveTolerance();
 	const FVector HookLoc = Hook->GetHookLocation();
-	const bool bComplete = FVector::DistSquared(Target->
+	bool bComplete = FVector::DistSquared(Target->
 		GetActorLocation(), HookLoc) <= MoveTolerance * MoveTolerance;
+
+	bComplete = bComplete || TimeElapsed >= MaxMoveDuration;
 
 	if (bComplete)
 	{

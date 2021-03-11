@@ -33,6 +33,7 @@ public:
 	FVector GetHookLocation() const;
 	FVector GetHandLocation() const;
 
+	FORCEINLINE void SetCollision(bool bEnableCollision) { MulticastSetCollision(bEnableCollision); }
 	FORCEINLINE void SetVisibility(bool bNewVisibility) { MulticastSetVisibility(bNewVisibility); }
 	FORCEINLINE void SetLength(float NewLength) { MulticastSetLength(NewLength); }
 
@@ -51,6 +52,9 @@ private:
 	void SetOwner(AActor* NewOwner) override;
 	void OnRep_Owner() override;
 	void Tick(float DeltaSeconds) override;
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastSetCollision(bool bEnableCollision);
 
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastSetVisibility(bool bNewVisibility);

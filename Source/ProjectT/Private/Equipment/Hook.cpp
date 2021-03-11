@@ -160,6 +160,11 @@ void AHook::Tick(float DeltaSeconds)
 		States[Idx]->Tick(DeltaSeconds);
 }
 
+void AHook::MulticastSetCollision_Implementation(bool bEnableCollision)
+{
+	GetOwner()->SetActorEnableCollision(bEnableCollision);
+}
+
 void AHook::MulticastSetVisibility_Implementation(bool bNewVisibility)
 {
 	HookMesh->SetVisibility(bNewVisibility);

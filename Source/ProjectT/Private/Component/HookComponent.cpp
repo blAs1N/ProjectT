@@ -42,14 +42,14 @@ void UHookComponent::MoveTo()
 void UHookComponent::BeginPlay()
 {
 	Super::BeginPlay();
-	if (GetOwnerRole() < ROLE_AutonomousProxy)
+	if (!GetOwner()->HasAuthority())
 		return;
 	
 	FActorSpawnParameters Param;
 	Param.Owner = GetOwner();
 
 	HookInst = GetWorld()->SpawnActor<AHook>(HookClass, Param);
-	OnRep_Hook();
+	if (Key) OnRep_Hook();
 }
 
 void UHookComponent::OnInitialize(int32 InKey)
@@ -64,13 +64,11 @@ void UHookComponent::GetLifetimeReplicatedProps
 	(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-	DOREPLIFETIME_CONDITION(UHookComponent, HookInst, COND_SkipOwner);
+	DOREPLIFETIME(UHookComponent, HookInst);
 }
 
 void UHookComponent::OnRep_Hook()
 {
-	if (!Key) return;
-
 	const bool bLoadAsync = IInitializable::Execute_IsLoadAsync(GetOwner());
 	GetData<FHookData>(HookDataTable, Key, [this, bLoadAsync](auto Data)
 		{
@@ -81,24 +79,18 @@ void UHookComponent::OnRep_Hook()
 
 void UHookComponent::ServerHook_Implementation()
 {
-	check(HookInst);
-
 	if (!GetOwner()->HasLocalNetOwner())
 		HookInst->Hook();
 }
 
 void UHookComponent::ServerUnhook_Implementation()
 {
-	check(HookInst);
-
 	if (!GetOwner()->HasLocalNetOwner())
 		HookInst->Unhook();
 }
 
 void UHookComponent::ServerMoveTo_Implementation()
 {
-	check(HookInst);
-
 	if (!GetOwner()->HasLocalNetOwner())
 		HookInst->MoveTo();
 }

@@ -3,36 +3,36 @@
 #include "Equipment/State/SwingState.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Data/HookStat.h"
 #include "Equipment/Hook.h"
+#include "Equipment/HookContext.h"
 
-void FSwingState::Enter()
+void FSwingState::Enter(UHookContext* Context)
 {
-	const auto Hook = GetOwner<AHook>();
+	const FVector HookLoc = Context->GetHookLocation();
+	const FRotator HookRot = Context->GetHookRotation();
 
-	const FVector HookLoc = Hook->GetHookLocation();
-	const FRotator HookRot = Hook->GetHookRotation();
-
-	const float Offset = Hook->GetStat().PenetrationOffset;
-	const auto Target = Hook->GetHookedTarget();
+	const float Offset = Context->GetStat().PenetrationOffset;
+	const auto Target = Context->GetHookTarget();
 	
+	const auto Hook = Context->GetHook();
 	Hook->SetActorLocationAndRotation(HookLoc, HookRot);
 	Hook->AddActorLocalRotation(FRotator{ 180.0f, 0.0f, 0.0f });
 	Hook->AddActorLocalOffset(FVector{ Offset, 0.0f, 0.0f });
 	Hook->AttachToComponent(Target, FAttachmentTransformRules::KeepWorldTransform);
 
-	const float Length = FVector::Distance(Hook->GetHandLocation(), HookLoc);
-	Hook->SetLength(Length);
+	const float Length = FVector::Distance(Context->GetHandLocation(), HookLoc);
+	Context->SetLength(Length);
 }
 
-void FSwingState::Tick(float DeltaSeconds)
+void FSwingState::Tick(UHookContext* Context, float DeltaSeconds)
 {
-	const auto Hook = GetOwner<AHook>();
-	const auto Target = Hook->GetOwner<ACharacter>();
+	const auto Target = Context->GetTarget();
 
-	const FVector HookLoc = Hook->GetHookLocation();
-	const float Length = Hook->GetLength();
+	const FVector HookLoc = Context->GetHookLocation();
+	const float Length = Context->GetLength();
 
-	float ForceCoef = FVector::Dist2D(Hook->GetHandLocation(), HookLoc);
+	float ForceCoef = FVector::Dist2D(Context->GetHandLocation(), HookLoc);
 	ForceCoef /= Length;
 	ForceCoef = 1.0f - ForceCoef;
 	ForceCoef = FMath::Clamp(ForceCoef, 0.0f, 1.0f);
@@ -53,11 +53,11 @@ void FSwingState::Tick(float DeltaSeconds)
 		Velocity = TargetVelocity.GetSafeNormal()
 			| Target->GetControlRotation().Vector();
 
-		Velocity = ForceCoef * Hook->GetStat()
+		Velocity = ForceCoef * Context->GetStat()
 			.BoostPower * FMath::Clamp(Velocity, 0.0f, 1.0f);
 
 		Force = (TargetVelocity * Velocity)
-			.GetClampedToMaxSize(Hook->GetStat().MaxBoostPower);
+			.GetClampedToMaxSize(Context->GetStat().MaxBoostPower);
 
 		Target->GetCharacterMovement()->AddForce(Force);
 	}

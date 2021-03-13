@@ -7,9 +7,9 @@
 class PROJECTT_API FThrowState final : public FStateBase
 {
 public:
-	void Enter() override;
-	void Tick(float DeltaSeconds) override;
-	void Exit() override {}
+	void Enter(UHookContext* Context) override;
+	void Tick(UHookContext* Context, float DeltaSeconds) override;
+	void Exit(UHookContext* Context) override {}
 
 private:
 	FVector StartLoc;

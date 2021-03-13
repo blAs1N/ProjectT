@@ -1,31 +1,30 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "Equipment/State/MoveState.h"
-#include "Components/CapsuleComponent.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Data/HookStat.h"
 #include "Equipment/Hook.h"
+#include "Equipment/HookContext.h"
 
-void FMoveState::Enter()
+void FMoveState::Enter(UHookContext* Context)
 {
-	const auto Hook = GetOwner<AHook>();
-	Hook->SetCollision(false);
+	TimeElapsed = 0.0f;
 
-	const auto Target = Hook->GetOwner<ACharacter>();
+	Context->SetCollision(false);
+	Context->SetMovementMode(EMovementMode::MOVE_Flying);
+
+	const auto Target = Context->GetTarget();
 	StartLoc = Target->GetActorLocation();
-
-	Target->GetCharacterMovement()->
-		SetMovementMode(EMovementMode::MOVE_Flying);
 }
 
-void FMoveState::Tick(float DeltaSeconds)
+void FMoveState::Tick(UHookContext* Context, float DeltaSeconds)
 {
-	const auto Hook = GetOwner<AHook>();
-	const auto Target = Hook->GetOwner<ACharacter>();
-
-	const float MaxMoveDuration = Hook->GetStat().MaxMoveDuration;
-	const float MoveTolerance = Hook->GetMoveTolerance();
-	const FVector HookLoc = Hook->GetHookLocation();
+	const float MaxMoveDuration = Context->GetStat().MaxMoveDuration;
+	const float MoveTolerance = Context->GetMoveTolerance();
+	const FVector HookLoc = Context->GetHookLocation();
+	const auto Target = Context->GetTarget();
+	
 	bool bComplete = FVector::DistSquared(Target->
 		GetActorLocation(), HookLoc) <= MoveTolerance * MoveTolerance;
 
@@ -33,7 +32,7 @@ void FMoveState::Tick(float DeltaSeconds)
 
 	if (bComplete)
 	{
-		Hook->SetState(EHookState::Idle);
+		Context->SetState(EHookState::Idle);
 		return;
 	}
 
@@ -44,16 +43,12 @@ void FMoveState::Tick(float DeltaSeconds)
 	Target->SetActorLocation(NewLoc);
 }
 
-void FMoveState::Exit()
+void FMoveState::Exit(UHookContext* Context)
 {
-	const auto Hook = GetOwner<AHook>();
-	const auto Target = Hook->GetOwner<ACharacter>();
+	Context->SetCollision(true);
+	Context->SetMovementMode();
 
-	Hook->SetCollision(true);
-	Target->GetCharacterMovement()->SetDefaultMovementMode();
-
+	const auto Target = Context->GetTarget();
 	const FVector Dir = Target->GetActorLocation() - StartLoc;
-	Target->LaunchCharacter(Dir * Hook->GetStat().EndMoveLaunchPower, true, true);
-
-	TimeElapsed = 0.0f;
+	Target->LaunchCharacter(Dir * Context->GetStat().EndMoveLaunchPower, true, true);
 }

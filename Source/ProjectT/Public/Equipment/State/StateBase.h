@@ -2,23 +2,12 @@
 
 #pragma once
 
-#include "UObject/ObjectMacros.h"
+#include "UObject/NoExportTypes.h"
 
 class PROJECTT_API FStateBase
 {
 public:
-	virtual ~FStateBase() = default;
-
-	virtual void Enter() {}
-	virtual void Tick(float DeltaSeconds) {}
-	virtual void Exit() {}
-
-	FORCEINLINE void SetOwner(class AActor* NewOwner) noexcept { Owner = NewOwner; }
-
-protected:
-	template <class T = AActor>
-	FORCEINLINE T* GetOwner() const noexcept { return Cast<T>(Owner); }
-
-private:
-	AActor* Owner;
+	virtual void Enter(class UHookContext* Context) {}
+	virtual void Tick(UHookContext* Context, float DeltaSeconds) {}
+	virtual void Exit(UHookContext* Context) {}
 };

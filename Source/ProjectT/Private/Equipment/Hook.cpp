@@ -1,8 +1,8 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "Equipment/Hook.h"
-#include "Components/CapsuleComponent.h"
 #include "Components/StaticMeshComponent.h"
+#include "Engine/ActorChannel.h"
 #include "GameFramework/Character.h"
 #include "Net/UnrealNetwork.h"
 #include "CableComponent.h"
@@ -11,6 +11,7 @@
 #include "Equipment/State/MoveState.h"
 #include "Equipment/State/SwingState.h"
 #include "Equipment/State/ThrowState.h"
+#include "Equipment/HookContext.h"
 #include "MISC/AsyncLoad.h"
 
 AHook::AHook()
@@ -41,6 +42,7 @@ void AHook::Initialize(const FHookData& Data, bool bLoadAsync)
 	LoadAssets(Data, bLoadAsync);
 	HandSocket = Data.HandSocket;
 	Stat = Data.Stat;
+	bInit = true;
 
 	const FTransform DefaultTransform = GetClass()
 		->GetDefaultObject<AHook>()->HookMesh->GetRelativeTransform();
@@ -52,6 +54,8 @@ void AHook::Initialize(const FHookData& Data, bool bLoadAsync)
 
 	if (const auto MyOwner = GetOwner<ACharacter>())
 		Cable->SetAttachEndToComponent(MyOwner->GetMesh(), HandSocket);
+
+	if (Context) OnRep_Context();
 }
 
 void AHook::Hook()
@@ -72,50 +76,11 @@ void AHook::MoveTo()
 		SetState(EHookState::Move);
 }
 
-void AHook::TraceHookTarget()
-{
-	FVector Start;
-	GetOwner()->GetActorEyesViewPoint(Start, HookRot);
-	HookLoc = Start + (HookRot.Vector() * Stat.Distance);
-
-	FHitResult Result;
-	if (GetWorld()->LineTraceSingleByProfile
-		(Result, Start, HookLoc, CollisionProfile))
-	{
-		HookedTarget = Result.Component.Get();
-		FirstTargetLoc = HookedTarget->GetComponentLocation();
-
-		HookLoc = Result.Location;
-		HookRot = FRotationMatrix::MakeFromX(Result.Normal).Rotator();
-	}
-	else
-	{
-		HookedTarget = nullptr;
-		FirstTargetLoc = FVector::ZeroVector;
-		HookRot += FRotator{ 0.0f, 180.0f, 0.0f };
-	}
-}
-
 void AHook::SetState(EHookState NewState)
 {
-	States[static_cast<uint8>(State)]->Exit();
-	States[static_cast<uint8>(NewState)]->Enter();
+	States[static_cast<uint8>(State)]->Exit(Context);
+	States[static_cast<uint8>(NewState)]->Enter(Context);
 	State = NewState;
-}
-
-FVector AHook::GetHookLocation() const
-{
-	if (!HookedTarget)
-		return HookLoc;
-
-	return HookLoc + HookedTarget->
-		GetComponentLocation() - FirstTargetLoc;
-}
-
-FVector AHook::GetHandLocation() const
-{
-	return CastChecked<ACharacter>(GetOwner())
-		->GetMesh()->GetSocketLocation(HandSocket);
 }
 
 void AHook::BeginPlay()
@@ -157,23 +122,25 @@ void AHook::Tick(float DeltaSeconds)
 
 	const uint8 Idx = static_cast<uint8>(State);
 	if (States.IsValidIndex(Idx))
-		States[Idx]->Tick(DeltaSeconds);
+		States[Idx]->Tick(Context, DeltaSeconds);
 }
 
-void AHook::MulticastSetCollision_Implementation(bool bEnableCollision)
+void AHook::GetLifetimeReplicatedProps(TArray
+	<FLifetimeProperty>& OutLifetimeProps) const
 {
-	GetOwner()->SetActorEnableCollision(bEnableCollision);
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME(AHook, Context);
 }
 
-void AHook::MulticastSetVisibility_Implementation(bool bNewVisibility)
+bool AHook::ReplicateSubobjects(UActorChannel* Channel,
+	FOutBunch* Bunch, FReplicationFlags* RepFlags)
 {
-	HookMesh->SetVisibility(bNewVisibility);
-	Cable->SetVisibility(bNewVisibility);
-}
+	bool WroteSomething = Super::ReplicateSubobjects(Channel, Bunch, RepFlags);
 
-void AHook::MulticastSetLength_Implementation(float NewLength)
-{
-	Cable->CableLength = Length = NewLength;
+	if (Context)
+		WroteSomething |= Channel->ReplicateSubobject(Context, *Bunch, *RepFlags);
+
+	return WroteSomething;
 }
 
 void AHook::LoadAssets(const FHookData& Data, bool bLoadAsync)
@@ -201,15 +168,23 @@ void AHook::AllocateState()
 {
 	if (States.Num() > 0) return;
 	
-	States.Emplace(new FIdleState{});
-	States[0]->SetOwner(this);
+	if (HasAuthority())
+	{
+		Context = NewObject<UHookContext>(this);
+		OnRep_Context();
+	}
 
-	States.Emplace(new FThrowState{});
-	States[1]->SetOwner(this);
+	States.Emplace(new FIdleState);
+	States.Emplace(new FThrowState);
+	States.Emplace(new FSwingState);
+	States.Emplace(new FMoveState);
+}
 
-	States.Emplace(new FSwingState{});
-	States[2]->SetOwner(this);
+void AHook::OnRep_Context()
+{
+	if (!bInit || bInitContext) return;
+	bInitContext = true;
 
-	States.Emplace(new FMoveState{});
-	States[3]->SetOwner(this);
+	Context->Initialize(this, CollisionProfile,
+		HandSocket, Stat, HookTolerance, MoveTolerance);
 }

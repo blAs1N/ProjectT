@@ -23,50 +23,42 @@ public:
 	void Unhook();
 	void MoveTo();
 
-	void TraceHookTarget();
 	void SetState(EHookState NewState);
 
-	FVector GetHookLocation() const;
-	FVector GetHandLocation() const;
-
-	FORCEINLINE void SetCollision(bool bEnableCollision) { MulticastSetCollision(bEnableCollision); }
-	FORCEINLINE void SetVisibility(bool bNewVisibility) { MulticastSetVisibility(bNewVisibility); }
-	FORCEINLINE void SetLength(float NewLength) { MulticastSetLength(NewLength); }
-
-	FORCEINLINE class UPrimitiveComponent* GetHookedTarget() const noexcept { return HookedTarget; }
-	FORCEINLINE FRotator GetHookRotation() const noexcept { return HookRot; }
-
-	FORCEINLINE float GetHookTolerance() const noexcept { return HookTolerance; }
-	FORCEINLINE float GetMoveTolerance() const noexcept { return MoveTolerance; }
-	FORCEINLINE float GetLength() const noexcept { return Length; }
-
-	FORCEINLINE const FHookStat& GetStat() const noexcept { return Stat; }
+	FORCEINLINE class UStaticMeshComponent* GetHookMesh() const noexcept { return HookMesh; }
+	FORCEINLINE class UCableComponent* GetCable() const noexcept { return Cable; }
 
 private:
 	void BeginPlay() override;
 
 	void SetOwner(AActor* NewOwner) override;
 	void OnRep_Owner() override;
+
 	void Tick(float DeltaSeconds) override;
 
-	UFUNCTION(NetMulticast, Reliable)
-	void MulticastSetCollision(bool bEnableCollision);
+	void GetLifetimeReplicatedProps(TArray
+		<FLifetimeProperty>& OutLifetimeProps) const override;
 
-	UFUNCTION(NetMulticast, Reliable)
-	void MulticastSetVisibility(bool bNewVisibility);
-
-	UFUNCTION(NetMulticast, Reliable)
-	void MulticastSetLength(float NewLength);
+	bool ReplicateSubobjects(UActorChannel* Channel,
+		FOutBunch* Bunch, FReplicationFlags* RepFlags) override;
 
 	void LoadAssets(const FHookData& Data, bool bLoadAsync);
 	void AllocateState();
 
+	UFUNCTION()
+	void OnRep_Context();
+
 private:
+	TArray<TUniquePtr<class FStateBase>> States;
+
+	UPROPERTY(Transient, ReplicatedUsing = OnRep_Context)
+	class UHookContext* Context;
+	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
-	class UStaticMeshComponent* HookMesh;
+	UStaticMeshComponent* HookMesh;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
-	class UCableComponent* Cable;
+	UCableComponent* Cable;
 
 	UPROPERTY(EditDefaultsOnly, meta = (AllowPrivateAccess = true))
 	FName CollisionProfile;
@@ -74,16 +66,7 @@ private:
 	UPROPERTY(EditDefaultsOnly, meta = (AllowPrivateAccess = true))
 	FName EndPointSocket;
 
-	TArray<TUniquePtr<class FStateBase>> States;
-
-	UPROPERTY(Transient)
-	UPrimitiveComponent* HookedTarget;
-
 	FName HandSocket;
-
-	FVector FirstTargetLoc;
-	FVector HookLoc;
-	FRotator HookRot;
 
 	UPROPERTY(EditDefaultsOnly, meta = (AllowPrivateAccess = true))
 	float HookTolerance;
@@ -92,7 +75,8 @@ private:
 	float MoveTolerance;
 
 	FHookStat Stat;
-	float Length;
 
-	EHookState State;
+	EHookState State : 2;
+	uint8 bInitContext : 1;
+	uint8 bInit : 1;
 };

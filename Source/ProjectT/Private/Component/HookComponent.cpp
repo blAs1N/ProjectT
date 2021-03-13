@@ -49,7 +49,7 @@ void UHookComponent::BeginPlay()
 	Param.Owner = GetOwner();
 
 	HookInst = GetWorld()->SpawnActor<AHook>(HookClass, Param);
-	if (Key) OnRep_Hook();
+	OnRep_Hook();
 }
 
 void UHookComponent::OnInitialize(int32 InKey)
@@ -69,6 +69,8 @@ void UHookComponent::GetLifetimeReplicatedProps
 
 void UHookComponent::OnRep_Hook()
 {
+	if (!Key) return;
+
 	const bool bLoadAsync = IInitializable::Execute_IsLoadAsync(GetOwner());
 	GetData<FHookData>(HookDataTable, Key, [this, bLoadAsync](auto Data)
 		{

@@ -5,13 +5,9 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "Data/HookStat.h"
+#include "Data/HookState.h"
 #include "Equipment/State/StateBase.h"
 #include "Hook.generated.h"
-
-enum class EHookState : uint8
-{
-	Idle, Throw, Swing, Move
-};
 
 UCLASS()
 class PROJECTT_API AHook final : public AActor

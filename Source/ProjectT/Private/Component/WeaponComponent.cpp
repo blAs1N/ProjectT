@@ -65,8 +65,10 @@ void UWeaponComponent::OnGetData(const FWeaponData& Data)
 
 		if (WeaponInst)
 		{
+			WeaponInst->SetActorRelativeTransform(FTransform::Identity);
+
 			WeaponInst->AttachToComponent(WeaponMesh,
-				FAttachmentTransformRules::SnapToTargetIncludingScale, Data.MuzzleSocket);
+				FAttachmentTransformRules::KeepRelativeTransform, Data.MuzzleSocket);
 		}
 	};
 

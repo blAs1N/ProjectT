@@ -18,8 +18,11 @@ APTCharacter::APTCharacter(const FObjectInitializer& ObjectInitializer)
 
 	HookComp = CreateDefaultSubobject<UHookComponent>(TEXT("Hook"));
 	WeaponComp = CreateDefaultSubobject<UWeaponComponent>(TEXT("Weapon"));
+
 	WeaponMeshComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("WeaponMesh"));
 	WeaponMeshComp->SetupAttachment(GetMesh());
+	WeaponMeshComp->SetCollisionProfileName(TEXT("NoCollision"));
+	WeaponMeshComp->SetNotifyRigidBodyCollision(false);
 }
 
 float APTCharacter::TakeDamage(float Damage, const FDamageEvent&

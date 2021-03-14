@@ -60,8 +60,8 @@ void UHookComponent::OnInitialize(int32 InKey)
 		OnRep_Hook();
 }
 
-void UHookComponent::GetLifetimeReplicatedProps
-	(TArray<FLifetimeProperty>& OutLifetimeProps) const
+void UHookComponent::GetLifetimeReplicatedProps(
+	TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME(UHookComponent, HookInst);

@@ -19,3 +19,17 @@ static void AsyncLoad(const TSoftObjectPtr<T>& SoftPtr, Func&& Fn)
 	}
 	else Fn(SoftPtr);
 }
+
+template <class T, class Func>
+static void LoadObject(const TSoftObjectPtr<T>& SoftPtr, Func&& Fn, bool bLoadAsync)
+{
+	if (bLoadAsync)
+	{
+		AsyncLoad(SoftPtr, [Fn = Forward<Func>(Fn)](auto Ptr) { Fn(Ptr); });
+	}
+	else
+	{
+		SoftPtr.LoadSynchronous();
+		Fn(SoftPtr);
+	}
+}

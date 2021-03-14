@@ -22,7 +22,7 @@ public:
 	FORCEINLINE FVector GetPawnViewLocation() const override { return GetViewLocation(); }
 	FORCEINLINE class UHookComponent* GetHookComponent() const noexcept { return HookComp; }
 	FORCEINLINE class UWeaponComponent* GetWeaponComponent() const noexcept { return WeaponComp; }
-	FORCEINLINE USkeletalMeshComponent* GetWeaponMeshComponent() const noexcept { return WeaponMeshComp; }
+	FORCEINLINE class UStaticMeshComponent* GetWeaponMeshComponent() const noexcept { return WeaponMeshComp; }
 
 protected:
 	UFUNCTION(BlueprintNativeEvent, BlueprintPure)
@@ -43,7 +43,7 @@ private:
 	UWeaponComponent* WeaponComp;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Component, meta = (AllowPrivateAccess = true))
-	USkeletalMeshComponent* WeaponMeshComp;
+	UStaticMeshComponent* WeaponMeshComp;
 
 	UPROPERTY(EditDefaultsOnly, meta = (AllowPrivateAccess = true))
 	TSoftObjectPtr<UDataTable> CharacterDataTable;

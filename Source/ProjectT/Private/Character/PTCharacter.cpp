@@ -2,6 +2,7 @@
 
 #include "Character/PTCharacter.h"
 #include "Components/CapsuleComponent.h"
+#include "Components/StaticMeshComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "UObject/SoftObjectPtr.h"
 #include "Component/CompositeModelComponent.h"
@@ -17,7 +18,7 @@ APTCharacter::APTCharacter(const FObjectInitializer& ObjectInitializer)
 
 	HookComp = CreateDefaultSubobject<UHookComponent>(TEXT("Hook"));
 	WeaponComp = CreateDefaultSubobject<UWeaponComponent>(TEXT("Weapon"));
-	WeaponMeshComp = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("WeaponMesh"));
+	WeaponMeshComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("WeaponMesh"));
 	WeaponMeshComp->SetupAttachment(GetMesh());
 }
 

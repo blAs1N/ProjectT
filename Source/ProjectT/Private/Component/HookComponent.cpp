@@ -74,8 +74,7 @@ void UHookComponent::OnRep_Hook()
 	const bool bLoadAsync = IInitializable::Execute_IsLoadAsync(GetOwner());
 	GetData<FHookData>(HookDataTable, Key, [this, bLoadAsync](auto Data)
 		{
-			if (HookInst)
-				HookInst->Initialize(Data, bLoadAsync);
+			HookInst->Initialize(Data, bLoadAsync);
 		}, bLoadAsync);
 }
 

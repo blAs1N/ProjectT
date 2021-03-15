@@ -42,7 +42,9 @@ void AHook::Initialize(const FHookData& Data, bool bLoadAsync)
 {
 	LoadAssets(Data, bLoadAsync);
 	HandSocket = Data.HandSocket;
+
 	Stat = Data.Stat;
+	Delay =  CurDelay = Data.Delay;
 	bInit = true;
 
 	const FTransform DefaultTransform = GetClass()
@@ -61,7 +63,7 @@ void AHook::Initialize(const FHookData& Data, bool bLoadAsync)
 
 void AHook::Hook()
 {
-	if (GetOwner() && State == EHookState::Idle)
+	if (GetOwner() && CurDelay >= Delay && State == EHookState::Idle)
 		SetState(EHookState::Throw);
 }
 
@@ -82,6 +84,9 @@ void AHook::SetState(EHookState NewState)
 	States[static_cast<uint8>(State)]->Exit(Context);
 	States[static_cast<uint8>(NewState)]->Enter(Context);
 	State = NewState;
+
+	if (State == EHookState::Idle)
+		CurDelay = 0.0f;
 }
 
 void AHook::BeginPlay()
@@ -120,6 +125,9 @@ void AHook::OnRep_Owner()
 void AHook::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
+
+	if (CurDelay < Delay)
+		CurDelay += DeltaSeconds;
 
 	const uint8 Idx = static_cast<uint8>(State);
 	if (States.IsValidIndex(Idx))

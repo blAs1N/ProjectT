@@ -4,8 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "Data/HookStat.h"
-#include "Data/HookState.h"
+#include "Data/Hook/HookStat.h"
+#include "Data/Hook/HookState.h"
 #include "Equipment/State/StateBase.h"
 #include "Hook.generated.h"
 
@@ -75,6 +75,9 @@ private:
 	float MoveTolerance;
 
 	FHookStat Stat;
+
+	float Delay;
+	float CurDelay;
 
 	EHookState State : 2;
 	uint8 bInitContext : 1;

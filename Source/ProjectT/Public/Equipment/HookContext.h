@@ -4,8 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "MISC/NetworkObject.h"
-#include "Data/HookStat.h"
-#include "Data/HookState.h"
+#include "Data/Hook/HookStat.h"
+#include "Data/Hook/HookState.h"
 #include "HookContext.generated.h"
 
 UCLASS()
@@ -14,8 +14,7 @@ class PROJECTT_API UHookContext final : public UNetworkObject
 	GENERATED_BODY()
 	
 public:
-	void Initialize(class AHook* InHook, FName InCollisionProfile, FName InHandSocket,
-		const FHookStat& InStat, float InHookTolerance, float InMoveTolerance);
+	void Initialize(const struct FHookContextParam& Param);
 
 	void TraceHookTarget();
 	void SetState(EHookState NewState);
@@ -30,7 +29,7 @@ public:
 	FORCEINLINE void SetCollision(bool bEnableCollision) { MulticastSetCollision(bEnableCollision); }
 	FORCEINLINE void SetLength(float NewLength) { MulticastSetLength(NewLength); }
 
-	FORCEINLINE AHook* GetHook() const noexcept { return Hook; }
+	FORCEINLINE class AHook* GetHook() const noexcept { return Hook; }
 	FORCEINLINE class ACharacter* GetTarget() const noexcept { return Target; }
 
 	FORCEINLINE class UPrimitiveComponent* GetHookTarget() const noexcept { return HookTarget; }

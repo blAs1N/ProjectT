@@ -6,7 +6,7 @@
 #include "GameFramework/Character.h"
 #include "Net/UnrealNetwork.h"
 #include "CableComponent.h"
-#include "Data/HookData.h"
+#include "Data/Hook/HookContextParam.h"
 #include "Data/Hook/HookData.h"
 #include "Equipment/State/IdleState.h"
 #include "Equipment/State/MoveState.h"
@@ -186,6 +186,10 @@ void AHook::OnRep_Context()
 	if (!bInit || bInitContext) return;
 	bInitContext = true;
 
-	Context->Initialize(this, CollisionProfile,
-		HandSocket, Stat, HookTolerance, MoveTolerance);
+	FHookContextParam Param {
+		this, CollisionProfile, HandSocket,
+		Stat, HookTolerance, MoveTolerance
+	};
+
+	Context->Initialize(Param);
 }

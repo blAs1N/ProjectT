@@ -5,21 +5,20 @@
 #include "GameFramework/Character.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "CableComponent.h"
-#include "Data/HookStat.h"
+#include "Data/Hook/HookContextParam.h"
 #include "Equipment/Hook.h"
 
-void UHookContext::Initialize(AHook* InHook, FName InCollisionProfile,
-	FName InHandSocket, const FHookStat& InStat, float InHookTolerance, float InMoveTolerance)
+void UHookContext::Initialize(const FHookContextParam& Param)
 {
-	Hook = InHook;
+	Hook = Param.Hook;
 	Target = Hook->GetOwner<ACharacter>();
 
-	CollisionProfile = InCollisionProfile;
-	HandSocket = InHandSocket;
+	CollisionProfile = Param.CollisionProfile;
+	HandSocket = Param.HandSocket;
 	
-	Stat = InStat;
-	HookTolerance = InHookTolerance;
-	MoveTolerance = InMoveTolerance;
+	Stat = Param.Stat;
+	HookTolerance = Param.HookTolerance;
+	MoveTolerance = Param.MoveTolerance;
 }
 
 void UHookContext::TraceHookTarget()

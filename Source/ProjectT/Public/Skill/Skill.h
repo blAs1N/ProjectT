@@ -7,7 +7,7 @@
 #include "Skill.generated.h"
 
 UCLASS()
-class PROJECTT_API USkill final : public UObject
+class PROJECTT_API USkill : public UObject
 {
 	GENERATED_BODY()
 

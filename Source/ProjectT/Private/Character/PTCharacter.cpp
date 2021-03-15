@@ -67,9 +67,20 @@ void APTCharacter::OnInitialize(int32 Key)
 void APTCharacter::OnGetData(const FCharacterData& Data)
 {
 	Cast<UCompositeModelComponent>(GetMesh())->SetParam(Data.ModelParam);
-	GetMesh()->SetRelativeRotation(FRotator{ 0.0f, Data.MeshYaw, 0.0f });
-	GetMesh()->SetRelativeLocation(FVector{ 0.0f, 0.0f, Data.MeshZ });
 	
+	const FVector MeshLoc{ 0.0f, 0.0f, Data.MeshZ };
+	const FQuat MeshRot{ FRotator{ 0.0f, Data.MeshYaw, 0.0f } };
+
+	if (IsLocallyControlled())
+	{
+		GetMesh()->SetRelativeLocationAndRotation(MeshLoc, MeshRot);
+	}
+	else
+	{
+		BaseTranslationOffset = MeshLoc;
+		BaseRotationOffset = MeshRot;
+	}
+
 	GetCapsuleComponent()->SetCapsuleSize(Data.CapsuleRadius, Data.CapsuleHalfHeight);
 	Weight = Data.Weight;
 }

@@ -2,7 +2,7 @@
 
 #include "Engine/DataTable.h"
 #include "UObject/SoftObjectPtr.h"
-#include "Data/HookStat.h"
+#include "Data/Hook/HookStat.h"
 #include "HookData.generated.h"
 
 USTRUCT(Atomic, BlueprintType)
@@ -24,6 +24,9 @@ struct PROJECTT_API FHookData : public FTableRowBase
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	float Thickness;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	float Delay;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	FHookStat Stat;

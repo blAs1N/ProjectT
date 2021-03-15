@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "Data/Weapon/WeaponStat.h"
 #include "Weapon.generated.h"
 
 UCLASS()
@@ -16,33 +17,17 @@ public:
 
 	void Initialize(const struct FWeaponData& Data, bool bLoadAsync);
 
-	void UseSkill(uint8 Index);
+	void BeginFire();
+	void EndFire();
+
 	void Reload();
 
 private:
-	void BeginPlay() override;
-
 	void SetOwner(AActor* NewOwner) override;
 	void OnRep_Owner() override;
 
 	void Tick(float DeltaSeconds) override;
 
-	void GetLifetimeReplicatedProps(TArray
-		<FLifetimeProperty>& OutLifetimeProps) const override;
-
-	bool ReplicateSubobjects(UActorChannel* Channel,
-		FOutBunch* Bunch, FReplicationFlags* RepFlags) override;
-
-	UFUNCTION()
-	void OnRep_Context();
-
 private:
-	UPROPERTY(Transient)
-	TArray<class USkill*> Skills;
-
-	UPROPERTY(Transient, ReplicatedUsing = OnRep_Context)
-	class UWeaponContext* Context;
-
-	uint8 bInitContext : 1;
-	uint8 bInit : 1;
+	FWeaponStat Stat;
 };

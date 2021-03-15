@@ -1,9 +1,9 @@
 #pragma once
 
-#include "ShootStat.generated.h"
+#include "WeaponStat.generated.h"
 
 USTRUCT(Atomic, BlueprintType)
-struct PROJECTT_API FShootStat
+struct PROJECTT_API FWeaponStat
 {
 	GENERATED_BODY()
 

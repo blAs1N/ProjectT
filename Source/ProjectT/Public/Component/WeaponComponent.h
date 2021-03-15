@@ -16,7 +16,10 @@ public:
 	UWeaponComponent();
 
 	UFUNCTION(BlueprintCallable)
-	void UseSkill(uint8 Index);
+	void BeginFire();
+
+	UFUNCTION(BlueprintCallable)
+	void EndFire();
 
 	UFUNCTION(BlueprintCallable)
 	void Reload();
@@ -34,12 +37,16 @@ private:
 	void OnRep_Weapon();
 
 	UFUNCTION(Server, Reliable, WithValidation)
-	void ServerUseSkill(uint8 Index);
+	void ServerBeginFire();
+
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerEndFire();
 
 	UFUNCTION(Server, Reliable, WithValidation)
 	void ServerReload();
 
-	FORCEINLINE bool ServerUseSkill_Validate(uint8 Index) const noexcept { return true; }
+	FORCEINLINE bool ServerBeginFire_Validate() const noexcept { return true; }
+	FORCEINLINE bool ServerEndFire_Validate() const noexcept { return true; }
 	FORCEINLINE bool ServerReload_Validate() const noexcept { return true; }
 
 private:

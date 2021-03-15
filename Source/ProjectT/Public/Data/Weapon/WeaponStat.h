@@ -17,6 +17,9 @@ struct PROJECTT_API FShootStat
 	float Distance;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	float MinDamageDistance;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	float MaxDamageDistance;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (UIMin = 0.01f, ClampMin = 0.01f))

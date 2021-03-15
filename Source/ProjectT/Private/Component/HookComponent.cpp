@@ -3,7 +3,7 @@
 #include "Component/HookComponent.h"
 #include "Engine/DataTable.h"
 #include "Net/UnrealNetwork.h"
-#include "Data/HookData.h"
+#include "Data/Hook/HookData.h"
 #include "Equipment/Hook.h"
 #include "MISC/DataTableLoader.h"
 

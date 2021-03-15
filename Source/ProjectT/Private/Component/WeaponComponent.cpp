@@ -4,7 +4,7 @@
 #include "Engine/DataTable.h"
 #include "Net/UnrealNetwork.h"
 #include "Character/PTCharacter.h"
-#include "Data/WeaponData.h"
+#include "Data/Weapon/WeaponData.h"
 #include "Equipment/Weapon.h"
 #include "MISC/DataTableLoader.h"
 

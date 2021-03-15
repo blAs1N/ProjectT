@@ -7,6 +7,7 @@
 #include "Net/UnrealNetwork.h"
 #include "CableComponent.h"
 #include "Data/HookData.h"
+#include "Data/Hook/HookData.h"
 #include "Equipment/State/IdleState.h"
 #include "Equipment/State/MoveState.h"
 #include "Equipment/State/SwingState.h"

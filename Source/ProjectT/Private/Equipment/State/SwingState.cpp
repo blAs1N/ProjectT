@@ -3,7 +3,7 @@
 #include "Equipment/State/SwingState.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/CharacterMovementComponent.h"
-#include "Data/HookStat.h"
+#include "Data/Hook/HookStat.h"
 #include "Equipment/Hook.h"
 #include "Equipment/HookContext.h"
 

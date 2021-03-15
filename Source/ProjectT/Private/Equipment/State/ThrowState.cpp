@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "Equipment/State/ThrowState.h"
-#include "Data/HookStat.h"
+#include "Data/Hook/HookStat.h"
 #include "Equipment/Hook.h"
 #include "Equipment/HookContext.h"
 

@@ -9,32 +9,6 @@ void USkill::Initialize(const UDataAsset* Data)
 	ReceiveInitialize(Data);
 }
 
-void USkill::Begin()
-{
-	if (!CanUseSkill()) return;
-
-	OnBegin();
-	ReceiveOnBegin();
-	bActive = true;
-}
-
-void USkill::Tick(float DeltaSeconds)
-{
-	if (!bActive) return;
-
-	OnTick(DeltaSeconds);
-	ReceiveOnTick(DeltaSeconds);
-}
-
-void USkill::End()
-{
-	if (!bActive) return;
-
-	OnEnd();
-	ReceiveOnEnd();
-	bActive = false;
-}
-
 UWorld* USkill::GetWorld() const
 {
 	const auto* Outer = GetTypedOuter<AActor>();

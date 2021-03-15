@@ -16,8 +16,8 @@ public:
 
 	void Initialize(const struct FWeaponData& Data, bool bLoadAsync);
 
-	void BeginSkill(uint8 Index);
-	void EndSkill(uint8 Index);
+	void UseSkill(uint8 Index);
+	void Reload();
 
 private:
 	void Tick(float DeltaSeconds) override;

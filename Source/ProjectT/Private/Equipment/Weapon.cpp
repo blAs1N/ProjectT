@@ -34,16 +34,16 @@ void AWeapon::Initialize(const FWeaponData& Data, bool bLoadAsync)
 	//if (Context) OnRep_Context();
 }
 
-void AWeapon::BeginSkill(uint8 Index)
+void AWeapon::UseSkill(uint8 Index)
 {
 	if (Skills.IsValidIndex(Index))
-		Skills[Index]->Begin();
+		Skills[Index]->Use(Context);
 }
 
-void AWeapon::EndSkill(uint8 Index)
+void AWeapon::Reload()
 {
-	if (Skills.IsValidIndex(Index))
-		Skills[Index]->End();
+	for (const auto Skill : Skills)
+		IReloadable::Execute_Reload(Skill, Context);
 }
 
 void AWeapon::Tick(float DeltaSeconds)

@@ -12,19 +12,13 @@ class PROJECTT_API USkill : public UObject
 	GENERATED_BODY()
 
 public:
-	virtual void Initialize(const UDataAsset* Data);
+	virtual void Initialize(const class UDataAsset* Data);
 
-	UFUNCTION(BlueprintCallable)
-	void Begin();
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
+	void Use(class UWeaponContext* Context);
 
-	UFUNCTION(BlueprintCallable)
-	void Tick(float DeltaSeconds);
-
-	UFUNCTION(BlueprintCallable)
-	void End();
-
-	UFUNCTION(BlueprintNativeEvent)
-	bool CanUseSkill() const;
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
+	void Tick(float DeltaSeconds, UWeaponContext* Context);
 
 	UWorld* GetWorld() const override;
 
@@ -32,21 +26,6 @@ protected:
 	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "Initialize"))
 	void ReceiveInitialize(const UDataAsset* Data);
 
-	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "OnBegin"))
-	void ReceiveOnBegin();
-
-	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "OnTick"))
-	void ReceiveOnTick(float DeltaSeconds);
-
-	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "OnEnd"))
-	void ReceiveOnEnd();
-
-	virtual void OnBegin() {}
-	virtual void OnTick(float DeltaSeconds) {}
-	virtual void OnEnd() {}
-
-	virtual bool CanUseSkill_Implementation() const { return !bActive; }
-
-private:
-	uint8 bActive : 1;
+	virtual void Use_Implementation(UWeaponContext* Context) {}
+	virtual void Tick_Implementation(float DeltaSeconds, UWeaponContext* Context) {}
 };

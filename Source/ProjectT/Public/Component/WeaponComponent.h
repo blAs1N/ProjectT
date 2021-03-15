@@ -16,10 +16,10 @@ public:
 	UWeaponComponent();
 
 	UFUNCTION(BlueprintCallable)
-	void BeginSkill(uint8 Index);
+	void UseSkill(uint8 Index);
 
 	UFUNCTION(BlueprintCallable)
-	void EndSkill(uint8 Index);
+	void Reload();
 
 private:
 	void BeginPlay() override;
@@ -34,13 +34,13 @@ private:
 	void OnRep_Weapon();
 
 	UFUNCTION(Server, Reliable, WithValidation)
-	void ServerBeginSkill(uint8 Index);
+	void ServerUseSkill(uint8 Index);
 
 	UFUNCTION(Server, Reliable, WithValidation)
-	void ServerEndSkill(uint8 Index);
+	void ServerReload();
 
-	FORCEINLINE bool ServerBeginSkill_Validate(uint8 Index) const noexcept { return true; }
-	FORCEINLINE bool ServerEndSkill_Validate(uint8 Index) const noexcept { return true; }
+	FORCEINLINE bool ServerUseSkill_Validate(uint8 Index) const noexcept { return true; }
+	FORCEINLINE bool ServerReload_Validate() const noexcept { return true; }
 
 private:
 	UPROPERTY(EditDefaultsOnly, meta = (AllowPrivateAccess = true))

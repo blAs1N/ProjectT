@@ -16,20 +16,20 @@ UWeaponComponent::UWeaponComponent()
 	WeaponClass = AWeapon::StaticClass();
 }
 
-void UWeaponComponent::BeginSkill(uint8 Index)
+void UWeaponComponent::UseSkill(uint8 Index)
 {
 	check(WeaponInst);
-	WeaponInst->BeginSkill(Index);
+	WeaponInst->UseSkill(Index);
 
-	ServerBeginSkill(Index);
+	ServerUseSkill(Index);
 }
 
-void UWeaponComponent::EndSkill(uint8 Index)
+void UWeaponComponent::Reload()
 {
 	check(WeaponInst);
-	WeaponInst->EndSkill(Index);
+	WeaponInst->Reload();
 
-	ServerEndSkill(Index);
+	ServerReload();
 }
 
 void UWeaponComponent::BeginPlay()
@@ -97,14 +97,14 @@ void UWeaponComponent::OnRep_Weapon()
 		}, bLoadAsync);
 }
 
-void UWeaponComponent::ServerBeginSkill_Implementation(uint8 Index)
+void UWeaponComponent::ServerUseSkill_Implementation(uint8 Index)
 {
 	if (!GetOwner()->HasLocalNetOwner())
-		WeaponInst->BeginSkill(Index);
+		WeaponInst->UseSkill(Index);
 }
 
-void UWeaponComponent::ServerEndSkill_Implementation(uint8 Index)
+void UWeaponComponent::ServerReload_Implementation()
 {
 	if (!GetOwner()->HasLocalNetOwner())
-		WeaponInst->EndSkill(Index);
+		WeaponInst->Reload();
 }

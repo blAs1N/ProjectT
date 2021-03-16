@@ -91,7 +91,12 @@ void UCompositeModelComponent::Merge()
 		GetMergedModel(Skeleton, Pieces) : MergeDirect();
 
 	SetSkeletalMesh(Model);
-	SetAnimClass(Param.AnimClass);
+
+	const bool bLoadAsync = IInitializable::Execute_IsLoadAsync(GetOwner());
+	LoadObject(Param.AnimClass, [this](const auto& Ptr)
+		{
+			SetAnimClass(Ptr.Get());
+		}, bLoadAsync);
 
 	Pieces.Empty();
 	Skeleton = nullptr;

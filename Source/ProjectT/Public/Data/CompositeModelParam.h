@@ -1,6 +1,5 @@
 #pragma once
 
-#include "UObject/SoftObjectPtr.h"
 #include "CompositeModelParam.generated.h"
 
 USTRUCT(Atomic, BlueprintType)
@@ -12,7 +11,7 @@ struct PROJECTT_API FCompositeModelParam
 	TSoftObjectPtr<class USkeleton> Skeleton;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TSubclassOf<class UAnimInstance> AnimClass;
+	TSoftClassPtr<class UAnimInstance> AnimClass;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TArray<TSoftObjectPtr<class USkeletalMesh>> Pieces;

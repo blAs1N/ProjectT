@@ -14,17 +14,23 @@ struct PROJECTT_API FHookStat
 	float Distance;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	float BoostPower;
+	float SwingScale;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	float MaxBoostPower;
+	float MoveScale;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	float MinMoveSpeed;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	float MaxMoveSpeed;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	float MaxMoveDuration;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	float PenetrationOffset;
+	float EndMoveLaunchPower;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	float EndMoveLaunchPower;
+	float PenetrationOffset;
 };

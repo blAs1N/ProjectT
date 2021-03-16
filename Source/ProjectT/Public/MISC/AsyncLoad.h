@@ -7,7 +7,7 @@
 #include "UObject/SoftObjectPtr.h"
 
 template <class T, class Func>
-static void AsyncLoad(const TSoftObjectPtr<T>& SoftPtr, Func&& Fn)
+static void AsyncLoad(const T& SoftPtr, Func&& Fn)
 {
 	if (SoftPtr.IsNull()) return;
 
@@ -20,11 +20,11 @@ static void AsyncLoad(const TSoftObjectPtr<T>& SoftPtr, Func&& Fn)
 }
 
 template <class T, class Func>
-static void LoadObject(const TSoftObjectPtr<T>& SoftPtr, Func&& Fn, bool bLoadAsync)
+static void LoadObject(const T& SoftPtr, Func&& Fn, bool bLoadAsync)
 {
 	if (bLoadAsync)
 	{
-		AsyncLoad(SoftPtr, [Fn = Forward<Func>(Fn)](auto Ptr) { Fn(Ptr); });
+		AsyncLoad(SoftPtr, [Fn = Forward<Func>(Fn)](const auto& Ptr) { Fn(Ptr); });
 	}
 	else
 	{

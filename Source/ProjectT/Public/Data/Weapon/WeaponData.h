@@ -13,6 +13,15 @@ struct PROJECTT_API FWeaponData : public FTableRowBase
 	TSoftObjectPtr<class UStaticMesh> Mesh;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TSoftObjectPtr<class USoundBase> FireSound;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TSoftObjectPtr<class UAnimMontage> FireAnim;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TSoftObjectPtr<class UAnimMontage> ReloadAnim;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	FTransform Transform;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)

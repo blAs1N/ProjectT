@@ -7,6 +7,11 @@
 #include "Data/Weapon/WeaponStat.h"
 #include "Weapon.generated.h"
 
+enum class EWeaponState : uint8
+{
+	Idle, Fire, Reload
+};
+
 UCLASS()
 class PROJECTT_API AWeapon final : public AActor
 {
@@ -28,6 +33,21 @@ private:
 
 	void Tick(float DeltaSeconds) override;
 
+	void Shoot();
+
 private:
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
+	class UParticleSystemComponent* FireComp;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
+	class UAudioComponent* AudioComp;
+
 	FWeaponStat Stat;
+
+	float FireLag;
+	float Spread;
+
+	int32 Clip;
+
+	EWeaponState State : 2;
 };

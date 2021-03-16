@@ -23,47 +23,26 @@ void FSwingState::Enter(UHookContext* Context)
 
 	const float Length = FVector::Distance(Context->GetHandLocation(), HookLoc);
 	Context->SetLength(Length);
+
+	DefaultAirCtrl = Context->GetTarget()->GetCharacterMovement()->AirControl;
+	Context->SetAirCtrl(1.0f);
 }
 
 void FSwingState::Tick(UHookContext* Context, float DeltaSeconds)
 {
 	const auto Target = Context->GetTarget();
 
-	const FVector HookLoc = Context->GetHookLocation();
-	const float Length = Context->GetLength();
-
-	float ForceCoef = FVector::Dist2D(Context->GetHandLocation(), HookLoc);
-	ForceCoef /= Length;
-	ForceCoef = 1.0f - ForceCoef;
-	ForceCoef = FMath::Clamp(ForceCoef, 0.0f, 1.0f);
-
 	const FVector TargetLoc = Target->GetActorLocation();
-	const FVector TargetVelocity = Target->GetVelocity();
+	const FVector HookLoc = Context->GetHookLocation();
 	
-	FVector Force; float Velocity;
-	if (TargetLoc.Z < HookLoc.Z)
-	{
-		Force = TargetLoc - HookLoc;
-		Velocity = TargetVelocity | Force;
-		Force.Normalize();
+	FVector Force = TargetLoc - HookLoc;
+	const float Dot = Target->GetVelocity() | Force;
 
-		Target->GetCharacterMovement()->
-			AddForce(Force * Velocity * -2.0f * ForceCoef);
+	Force.Normalize();
+	Target->GetCharacterMovement()->AddForce(Force * Dot * -2.0f * Context->GetStat().SwingScale);
+}
 
-		Velocity = TargetVelocity.GetSafeNormal()
-			| Target->GetControlRotation().Vector();
-
-		Velocity = ForceCoef * Context->GetStat()
-			.BoostPower * FMath::Clamp(Velocity, 0.0f, 1.0f);
-
-		Force = (TargetVelocity * Velocity)
-			.GetClampedToMaxSize(Context->GetStat().MaxBoostPower);
-
-		Target->GetCharacterMovement()->AddForce(Force);
-	}
-
-	Velocity = FMath::Max(FVector::Distance(TargetLoc, HookLoc) - Length, 0.0f) * 400.0f;
-
-	Force = FRotationMatrix::MakeFromX(HookLoc - TargetLoc).Rotator().Vector();
-	Target->GetCharacterMovement()->AddImpulse(Force * Velocity);
+void FSwingState::Exit(UHookContext* Context)
+{
+	Context->SetAirCtrl(DefaultAirCtrl);
 }

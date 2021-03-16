@@ -9,5 +9,9 @@ class PROJECTT_API FSwingState final : public FStateBase
 public:
 	void Enter(UHookContext* Context) override;
 	void Tick(UHookContext* Context, float DeltaSeconds) override;
-	void Exit(UHookContext* Context) override {}
+	void Exit(UHookContext* Context) override;
+
+private:
+	FVector BeforeLoc;
+	float DefaultAirCtrl;
 };

@@ -9,26 +9,24 @@
 
 void FMoveState::Enter(UHookContext* Context)
 {
-	TimeElapsed = 0.0f;
-
-	Context->SetCollision(false);
-	Context->SetMovementMode(EMovementMode::MOVE_Flying);
-
 	const auto Target = Context->GetTarget();
 	StartLoc = Target->GetActorLocation();
+	TimeElapsed = 0.0f;
 }
 
 void FMoveState::Tick(UHookContext* Context, float DeltaSeconds)
 {
-	const float MaxMoveDuration = Context->GetStat().MaxMoveDuration;
 	const float MoveTolerance = Context->GetMoveTolerance();
-	const FVector HookLoc = Context->GetHookLocation();
 	const auto Target = Context->GetTarget();
+
+	const FVector TargetLoc = Target->GetActorLocation();
+	const FVector HookLoc = Context->GetHookLocation();
 	
+	const auto& Stat = Context->GetStat();
 	bool bComplete = FVector::DistSquared(Target->
 		GetActorLocation(), HookLoc) <= MoveTolerance * MoveTolerance;
-
-	bComplete = bComplete || TimeElapsed >= MaxMoveDuration;
+		
+	bComplete = bComplete || TimeElapsed >= Stat.MaxMoveDuration;
 
 	if (bComplete)
 	{
@@ -36,18 +34,16 @@ void FMoveState::Tick(UHookContext* Context, float DeltaSeconds)
 		return;
 	}
 
+	FVector Power = (HookLoc - TargetLoc) * Context->GetStat().MoveScale *  DeltaSeconds;
+	const float Speed = FMath::Clamp(Power.Size(), Stat.MinMoveSpeed, Stat.MaxMoveSpeed);
+	Power.Normalize();
+	
+	Target->LaunchCharacter(Power * Speed, true, true);
 	TimeElapsed += DeltaSeconds;
-
-	const float BlendPct = MaxMoveDuration > 0.0f ? TimeElapsed / MaxMoveDuration : 1.0f;
-	const FVector NewLoc = bComplete ? HookLoc : FMath::Lerp(StartLoc, HookLoc, BlendPct);
-	Target->SetActorLocation(NewLoc);
 }
 
 void FMoveState::Exit(UHookContext* Context)
 {
-	Context->SetCollision(true);
-	Context->SetMovementMode();
-
 	const auto Target = Context->GetTarget();
 	const FVector Dir = Target->GetActorLocation() - StartLoc;
 	Target->LaunchCharacter(Dir * Context->GetStat().EndMoveLaunchPower, true, true);

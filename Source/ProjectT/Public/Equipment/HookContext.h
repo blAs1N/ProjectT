@@ -23,10 +23,6 @@ public:
 	FVector GetHookLocation() const;
 	FVector GetHandLocation() const;
 
-	FORCEINLINE void SetMovementMode(EMovementMode NewMovementMode = EMovementMode::MOVE_None,
-		uint8 NewCustomMode = 0) { MulticastSetMovementMode(NewMovementMode, NewCustomMode); }
-
-	FORCEINLINE void SetCollision(bool bEnableCollision) { MulticastSetCollision(bEnableCollision); }
 	FORCEINLINE void SetLength(float NewLength) { MulticastSetLength(NewLength); }
 
 	FORCEINLINE class AHook* GetHook() const noexcept { return Hook; }
@@ -42,13 +38,6 @@ public:
 	FORCEINLINE const FHookStat& GetStat() const noexcept { return Stat; }
 
 private:
-	UFUNCTION(NetMulticast, Reliable)
-	void MulticastSetMovementMode(
-		EMovementMode NewMovementMode, uint8 NewCustomMode);
-
-	UFUNCTION(NetMulticast, Reliable)
-	void MulticastSetCollision(bool bEnableCollision);
-
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastSetLength(float NewLength);
 

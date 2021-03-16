@@ -72,20 +72,6 @@ FVector UHookContext::GetHandLocation() const
 	return Target->GetMesh()->GetSocketLocation(HandSocket);
 }
 
-void UHookContext::MulticastSetMovementMode_Implementation(
-	EMovementMode NewMovementMode, uint8 NewCustomMode)
-{
-	if (NewMovementMode != EMovementMode::MOVE_None || NewCustomMode != 0)
-		Target->GetCharacterMovement()->SetMovementMode(NewMovementMode, NewCustomMode);
-	else
-		Target->GetCharacterMovement()->SetDefaultMovementMode();
-}
-
-void UHookContext::MulticastSetCollision_Implementation(bool bEnableCollision)
-{
-	Target->SetActorEnableCollision(bEnableCollision);
-}
-
 void UHookContext::MulticastSetLength_Implementation(float NewLength)
 {
 	Hook->GetCable()->CableLength = Length = NewLength;

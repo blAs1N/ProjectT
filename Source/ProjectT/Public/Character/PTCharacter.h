@@ -28,9 +28,18 @@ protected:
 	UFUNCTION(BlueprintNativeEvent, BlueprintPure)
 	FVector GetViewLocation() const;
 
+	UFUNCTION(BlueprintImplementableEvent, BlueprintPure)
+	float DamageToKnockback(float Damage) const;
+
 private:
+	void BeginPlay() override;
 	void OnInitialize(int32 Key) override;
+
 	void OnGetData(const struct FCharacterData& Data);
+
+	UFUNCTION()
+	void OnHit(AActor* DamagedActor, float Damage, const UDamageType*
+		DamageType, AController* InstigatedBy, AActor* DamageCauser);
 
 	FORCEINLINE FVector GetViewLocation_Implementation() const { return Super::GetPawnViewLocation(); }
 	FORCEINLINE bool IsLoadAsync_Implementation() const noexcept override { return bLoadAsync; }
@@ -48,11 +57,8 @@ private:
 	UPROPERTY(EditDefaultsOnly, meta = (AllowPrivateAccess = true))
 	TSoftObjectPtr<UDataTable> CharacterDataTable;
 
-	UPROPERTY(EditDefaultsOnly, meta = (AllowPrivateAccess = true))
-	float BackConstant;
-
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
 	float BackPercent;
-	float Weight;
 
 	UPROPERTY(EditDefaultsOnly, meta = (AllowPrivateAccess = true))
 	uint8 bLoadAsync : 1;

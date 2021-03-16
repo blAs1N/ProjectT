@@ -4,6 +4,7 @@
 #include "Components/CapsuleComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Kismet/GameplayStatics.h"
 #include "UObject/SoftObjectPtr.h"
 #include "Component/CompositeModelComponent.h"
 #include "Component/HookComponent.h"
@@ -44,15 +45,25 @@ float APTCharacter::TakeDamage(float Damage, const FDamageEvent&
 		Dir.Normalize();
 	}
 
-	// Get knockback power (Referenced by smash brothers)
-	float Nnockback = 7.0f * (Damage + 2.0f) * (Damage + BackPercent);
-	Nnockback /= (Weight + 100.0f);
-	Nnockback *= 2.0f;
-	Nnockback += BackConstant;
-
-	LaunchCharacter(Dir * Nnockback, true, true);
 	BackPercent += Damage;
+
+	if (GetCharacterMovement()->MovementMode == MOVE_Walking)
+	{
+		AddActorWorldOffset(FVector{ 0.0f, 0.0f, 50.0f });
+		Dir.Z = FMath::Max(Dir.Z, 0.0f);
+		Dir.Normalize();
+	}
+	
+	GetCharacterMovement()->AddImpulse(Dir * DamageToKnockback(Damage));
 	return Damage;
+}
+
+void APTCharacter::BeginPlay()
+{
+	Super::BeginPlay();
+
+	if (IsLocallyControlled())
+		OnTakeAnyDamage.AddDynamic(this, &APTCharacter::OnHit);
 }
 
 void APTCharacter::OnInitialize(int32 Key)
@@ -82,5 +93,11 @@ void APTCharacter::OnGetData(const FCharacterData& Data)
 	}
 
 	GetCapsuleComponent()->SetCapsuleSize(Data.CapsuleRadius, Data.CapsuleHalfHeight);
-	Weight = Data.Weight;
+	GetCharacterMovement()->Mass = Data.Weight;
+}
+
+void APTCharacter::OnHit(AActor* DamagedActor, float Damage,
+	const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser)
+{
+	HookComp->Unhook();
 }

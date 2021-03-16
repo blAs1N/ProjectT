@@ -52,12 +52,6 @@ void UHookContext::SetState(EHookState NewState)
 	Hook->SetState(NewState);
 }
 
-void UHookContext::SetVisibility(bool bNewVisibility)
-{
-	Hook->GetHookMesh()->SetVisibility(bNewVisibility);
-	Hook->GetCable()->SetVisibility(bNewVisibility);
-}
-
 FVector UHookContext::GetHookLocation() const
 {
 	if (!HookTarget)
@@ -75,4 +69,15 @@ FVector UHookContext::GetHandLocation() const
 void UHookContext::MulticastSetLength_Implementation(float NewLength)
 {
 	Hook->GetCable()->CableLength = Length = NewLength;
+}
+
+void UHookContext::MulticastSetAirCtrl_Implementation(float NewAirCtrl)
+{
+	Target->GetCharacterMovement()->AirControl = NewAirCtrl;
+}
+
+void UHookContext::MulticastSetVisibility_Implementation(bool bNewVisibility)
+{
+	Hook->GetHookMesh()->SetVisibility(bNewVisibility);
+	Hook->GetCable()->SetVisibility(bNewVisibility);
 }

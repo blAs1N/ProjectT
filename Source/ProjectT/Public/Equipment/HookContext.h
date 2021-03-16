@@ -18,12 +18,13 @@ public:
 
 	void TraceHookTarget();
 	void SetState(EHookState NewState);
-	void SetVisibility(bool bNewVisibility);
 
 	FVector GetHookLocation() const;
 	FVector GetHandLocation() const;
 
 	FORCEINLINE void SetLength(float NewLength) { MulticastSetLength(NewLength); }
+	FORCEINLINE void SetAirCtrl(float NewAirCtrl) { MulticastSetAirCtrl(NewAirCtrl); }
+	FORCEINLINE void SetVisibility(bool bNewVisibility) { MulticastSetVisibility(bNewVisibility); }
 
 	FORCEINLINE class AHook* GetHook() const noexcept { return Hook; }
 	FORCEINLINE class ACharacter* GetTarget() const noexcept { return Target; }
@@ -40,6 +41,12 @@ public:
 private:
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastSetLength(float NewLength);
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastSetAirCtrl(float NewAirCtrl);
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastSetVisibility(bool bNewVisibility);
 
 private:
 	UPROPERTY(Transient)

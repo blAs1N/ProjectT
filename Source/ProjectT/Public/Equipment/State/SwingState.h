@@ -14,4 +14,5 @@ public:
 private:
 	FVector BeforeLoc;
 	float DefaultAirCtrl;
+	float Length;
 };

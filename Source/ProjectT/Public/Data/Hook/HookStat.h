@@ -14,7 +14,10 @@ struct PROJECTT_API FHookStat
 	float Distance;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	float SwingScale;
+	float BoostPower;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	float MaxBoostPower;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	float MoveScale;

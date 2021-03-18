@@ -58,6 +58,11 @@ float APTCharacter::TakeDamage(float Damage, const FDamageEvent&
 	return Damage;
 }
 
+void APTCharacter::Death()
+{
+	//Destroy();
+}
+
 void APTCharacter::BeginPlay()
 {
 	Super::BeginPlay();

@@ -19,6 +19,9 @@ public:
 	float TakeDamage(float Damage, const FDamageEvent& DamageEvent,
 		AController* EventInstigator, AActor* DamageCauser) override;
 
+	UFUNCTION(BlueprintCallable)
+	void Death();
+
 	FORCEINLINE FVector GetPawnViewLocation() const override { return GetViewLocation(); }
 	FORCEINLINE class UHookComponent* GetHookComponent() const noexcept { return HookComp; }
 	FORCEINLINE class UWeaponComponent* GetWeaponComponent() const noexcept { return WeaponComp; }

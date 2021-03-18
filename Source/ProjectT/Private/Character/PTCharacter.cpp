@@ -75,6 +75,13 @@ void APTCharacter::OnInitialize(int32 Key)
 	IInitializable::Execute_Initialize(WeaponComp, Key);
 }
 
+bool APTCharacter::ShouldTakeDamage(float Damage, const FDamageEvent&
+	DamageEvent, AController* EventInstigator, AActor* DamageCauser) const
+{
+	return Super::ShouldTakeDamage(Damage, DamageEvent,
+		EventInstigator, DamageCauser) && !bInvincible;
+}
+
 void APTCharacter::OnGetData(const FCharacterData& Data)
 {
 	Cast<UCompositeModelComponent>(GetMesh())->SetParam(Data.ModelParam);

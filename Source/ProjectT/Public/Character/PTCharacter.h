@@ -23,6 +23,7 @@ public:
 	FORCEINLINE class UHookComponent* GetHookComponent() const noexcept { return HookComp; }
 	FORCEINLINE class UWeaponComponent* GetWeaponComponent() const noexcept { return WeaponComp; }
 	FORCEINLINE class UStaticMeshComponent* GetWeaponMeshComponent() const noexcept { return WeaponMeshComp; }
+	FORCEINLINE bool IsInvincible() const noexcept { return bInvincible; }
 
 protected:
 	UFUNCTION(BlueprintNativeEvent, BlueprintPure)
@@ -34,6 +35,9 @@ protected:
 private:
 	void BeginPlay() override;
 	void OnInitialize(int32 Key) override;
+
+	bool ShouldTakeDamage(float Damage, const FDamageEvent& DamageEvent,
+		AController* EventInstigator, AActor* DamageCauser) const override;
 
 	void OnGetData(const struct FCharacterData& Data);
 
@@ -62,4 +66,7 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, meta = (AllowPrivateAccess = true))
 	uint8 bLoadAsync : 1;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
+	uint8 bInvincible : 1;
 };

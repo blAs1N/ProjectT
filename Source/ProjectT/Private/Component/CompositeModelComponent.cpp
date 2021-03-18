@@ -2,10 +2,10 @@
 
 #include "Component/CompositeModelComponent.h"
 #include "SkeletalMeshMerge.h"
+#include "Game/PTGameInstance.h"
 #include "Interface/Initializable.h"
 #include "MISC/AsyncLoad.h"
 #include "MISC/MergeModelStorage.h"
-#include "MISC/PTGameInstance.h"
 
 void UCompositeModelComponent::SetParam(const FCompositeModelParam& InParam)
 {

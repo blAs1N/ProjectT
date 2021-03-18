@@ -4,14 +4,20 @@
 #include "EngineUtils.h"
 #include "MISC/DeadZone.h"
 
-FVector APTGameState::GetRandomZone()
+FVector APTGameState::GetRandomZone() const
 {
-	return FMath::RandPointInBox(GetDeadBox());
+	if (!DeadZone)
+		return FVector::ZeroVector;
+
+	return FMath::RandPointInBox(DeadZone->GetDeadBox());
 }
 
 bool APTGameState::IsInsideZone(const FVector& Loc) const
 {
-	return GetDeadBox().IsInside(Loc);
+	if (!DeadZone)
+		return true;
+
+	return DeadZone->GetDeadBox().IsInside(Loc);
 }
 
 void APTGameState::BeginPlay()

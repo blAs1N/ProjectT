@@ -14,6 +14,8 @@ class PROJECTT_API ADeadZone final : public AActor
 public:	
 	ADeadZone();
 
+	FBox GetDeadBox() const;
+
 	FORCEINLINE class UStaticMeshComponent* GetMesh() const noexcept { return Mesh; }
 
 private:

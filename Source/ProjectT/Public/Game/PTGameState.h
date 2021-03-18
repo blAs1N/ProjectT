@@ -21,8 +21,6 @@ public:
 private:
 	void BeginPlay() override;
 
-	FBox GetDeadBox() const;
-
 private:
 	UPROPERTY(Transient)
 	class ADeadZone* DeadZone;

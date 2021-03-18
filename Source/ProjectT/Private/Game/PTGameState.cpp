@@ -19,16 +19,3 @@ void APTGameState::BeginPlay()
 	Super::BeginPlay();	
 	DeadZone = *TActorIterator<ADeadZone>{ GetWorld() };
 }
-
-FBox APTGameState::GetDeadBox() const
-{
-	if (!DeadZone)
-		return FBox{};
-
-	const FVector Loc = DeadZone->GetActorLocation();
-	const FVector Size = DeadZone->GetActorScale3D() * 50.0f;
-
-	const FVector BoxMin = Loc - Size;
-	const FVector BoxMax = Loc + Size;
-	return FBox{ BoxMin, BoxMax };
-}

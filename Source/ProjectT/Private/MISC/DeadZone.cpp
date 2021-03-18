@@ -14,6 +14,16 @@ ADeadZone::ADeadZone()
 	Mesh->SetGenerateOverlapEvents(false);
 }
 
+FBox ADeadZone::GetDeadBox() const
+{
+	const FVector MyLoc = GetActorLocation();
+	const FVector MySize = GetActorScale3D() * 50.0f;
+
+	const FVector BoxMin = MyLoc - MySize;
+	const FVector BoxMax = MyLoc + MySize;
+	return FBox{ BoxMin, BoxMax };
+}
+
 void ADeadZone::BeginPlay()
 {
 	Super::BeginPlay();

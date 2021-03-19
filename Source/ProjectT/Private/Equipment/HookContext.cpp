@@ -28,13 +28,13 @@ void UHookContext::TraceHookTarget()
 	HookLoc = Start + (HookRot.Vector() * Stat.Distance);
 
 	FHitResult Result;
-	const bool bHit = Hook->GetWorld()->
-		LineTraceSingleByProfile(Result, Start, HookLoc, CollisionProfile);
+	Hook->GetWorld()->LineTraceSingleByProfile(
+		Result, Start, HookLoc, CollisionProfile);
 
-	if (bHit)
+	if (Result.Actor.IsValid())
 	{
-		HookTarget = Result.Component.Get();
-		FirstTargetLoc = HookTarget->GetComponentLocation();
+		HookTarget = Result.GetActor();
+		FirstTargetLoc = HookTarget->GetActorLocation();
 
 		HookLoc = Result.Location;
 		HookRot = FRotationMatrix::MakeFromX(Result.Normal).Rotator();
@@ -58,7 +58,7 @@ FVector UHookContext::GetHookLocation() const
 		return HookLoc;
 
 	return HookLoc + HookTarget->
-		GetComponentLocation() - FirstTargetLoc;
+		GetActorLocation() - FirstTargetLoc;
 }
 
 FVector UHookContext::GetHandLocation() const

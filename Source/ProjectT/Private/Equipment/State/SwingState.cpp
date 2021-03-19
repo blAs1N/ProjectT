@@ -19,7 +19,7 @@ void FSwingState::Enter(UHookContext* Context)
 	Hook->SetActorLocationAndRotation(HookLoc, HookRot);
 	Hook->AddActorLocalRotation(FRotator{ 180.0f, 0.0f, 0.0f });
 	Hook->AddActorLocalOffset(FVector{ Offset, 0.0f, 0.0f });
-	Hook->AttachToComponent(Target, FAttachmentTransformRules::KeepWorldTransform);
+	Hook->AttachToActor(Target, FAttachmentTransformRules::KeepWorldTransform);
 
 	Length = FVector::Distance(Context->GetHandLocation(), HookLoc);
 	Context->SetLength(Length);

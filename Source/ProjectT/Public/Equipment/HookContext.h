@@ -29,7 +29,7 @@ public:
 	FORCEINLINE class AHook* GetHook() const noexcept { return Hook; }
 	FORCEINLINE class ACharacter* GetTarget() const noexcept { return Target; }
 
-	FORCEINLINE class UPrimitiveComponent* GetHookTarget() const noexcept { return HookTarget; }
+	FORCEINLINE AActor* GetHookTarget() const noexcept { return HookTarget; }
 	FORCEINLINE FRotator GetHookRotation() const noexcept { return HookRot; }
 
 	FORCEINLINE float GetHookTolerance() const noexcept { return HookTolerance; }
@@ -48,6 +48,9 @@ private:
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastSetVisibility(bool bNewVisibility);
 
+	UFUNCTION()
+	void OnEndTarget(AActor* Actor, EEndPlayReason::Type EndPlayReason);
+
 private:
 	UPROPERTY(Transient)
 	AHook* Hook;
@@ -56,7 +59,7 @@ private:
 	ACharacter* Target;
 
 	UPROPERTY(Transient)
-	UPrimitiveComponent* HookTarget;
+	AActor* HookTarget;
 
 	FName CollisionProfile;
 	FName HandSocket;

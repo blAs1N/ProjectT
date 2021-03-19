@@ -23,6 +23,9 @@ void UHookContext::Initialize(const FHookContextParam& Param)
 
 void UHookContext::TraceHookTarget()
 {
+	if (HookTarget)
+		HookTarget->OnEndPlay.RemoveDynamic(this, &UHookContext::OnEndTarget);
+
 	FVector Start;
 	Target->GetActorEyesViewPoint(Start, HookRot);
 	HookLoc = Start + (HookRot.Vector() * Stat.Distance);
@@ -38,6 +41,8 @@ void UHookContext::TraceHookTarget()
 
 		HookLoc = Result.Location;
 		HookRot = FRotationMatrix::MakeFromX(Result.Normal).Rotator();
+
+		HookTarget->OnEndPlay.AddDynamic(this, &UHookContext::OnEndTarget);
 	}
 	else
 	{
@@ -80,4 +85,13 @@ void UHookContext::MulticastSetVisibility_Implementation(bool bNewVisibility)
 {
 	Hook->GetHookMesh()->SetVisibility(bNewVisibility);
 	Hook->GetCable()->SetVisibility(bNewVisibility);
+}
+
+void UHookContext::OnEndTarget(AActor* Actor, EEndPlayReason::Type EndPlayReason)
+{
+	HookTarget = nullptr;
+	HookLoc = FVector::ZeroVector;
+	HookRot = FRotator::ZeroRotator;
+
+	Hook->Unhook();
 }

@@ -126,9 +126,7 @@ void AHook::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 
-	if (CurDelay < Delay)
-		CurDelay += DeltaSeconds;
-
+	CurDelay = FMath::Min(CurDelay + DeltaSeconds, Delay);
 	const uint8 Idx = static_cast<uint8>(State);
 	if (States.IsValidIndex(Idx))
 		States[Idx]->Tick(Context, DeltaSeconds);

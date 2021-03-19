@@ -125,6 +125,8 @@ void AHook::OnRep_Owner()
 void AHook::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
+	if (GetLocalRole() < ROLE_AutonomousProxy)
+		return;
 
 	CurDelay = FMath::Min(CurDelay + DeltaSeconds, Delay);
 	const uint8 Idx = static_cast<uint8>(State);

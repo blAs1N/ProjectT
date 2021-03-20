@@ -4,7 +4,6 @@
 
 struct FHookContextParam final
 {
-	class AHook* Hook;
 	FName CollisionProfile;
 	FName HandSocket;
 

@@ -55,10 +55,10 @@ void AHook::Initialize(const FHookData& Data, bool bLoadAsync)
 	HookMesh->SetRelativeTransform(HookTransform);
 	Cable->CableWidth = Data.Thickness;
 
+	AllocateState();
+
 	if (const auto MyOwner = GetOwner<ACharacter>())
 		Cable->SetAttachEndToComponent(MyOwner->GetMesh(), HandSocket);
-
-	if (Context) OnRep_Context();
 }
 
 void AHook::Hook()
@@ -89,6 +89,15 @@ void AHook::SetState(EHookState NewState)
 		CurDelay = 0.0f;
 }
 
+FHookContextParam AHook::GetContextParam() const
+{
+	return FHookContextParam
+	{
+		CollisionProfile, HandSocket,
+		Stat, HookTolerance, MoveTolerance
+	};
+}
+
 void AHook::BeginPlay()
 {
 	Super::BeginPlay();
@@ -98,9 +107,6 @@ void AHook::BeginPlay()
 
 	Cable->AttachToComponent(HookMesh,
 		FAttachmentTransformRules::KeepRelativeTransform, EndPointSocket);
-
-	if (GetLocalRole() >= ROLE_AutonomousProxy)
-		AllocateState();
 }
 
 void AHook::SetOwner(AActor* NewOwner)
@@ -108,7 +114,7 @@ void AHook::SetOwner(AActor* NewOwner)
 	Super::SetOwner(NewOwner);
 	OnRep_Owner();
 
-	if (GetLocalRole() >= ROLE_AutonomousProxy)
+	if (bInit)
 		AllocateState();
 }
 
@@ -175,29 +181,14 @@ void AHook::LoadAssets(const FHookData& Data, bool bLoadAsync)
 
 void AHook::AllocateState()
 {
-	if (States.Num() > 0) return;
+	const auto MyRole = GetLocalRole();
+	if (MyRole < ROLE_AutonomousProxy || States.Num() > 0) return;
 	
-	if (HasAuthority())
-	{
+	if (MyRole == ROLE_Authority)
 		Context = NewObject<UHookContext>(this);
-		OnRep_Context();
-	}
 
 	States.Emplace(new FIdleState);
 	States.Emplace(new FThrowState);
 	States.Emplace(new FSwingState);
 	States.Emplace(new FMoveState);
-}
-
-void AHook::OnRep_Context()
-{
-	if (!bInit || bInitContext) return;
-	bInitContext = true;
-
-	FHookContextParam Param {
-		this, CollisionProfile, HandSocket,
-		Stat, HookTolerance, MoveTolerance
-	};
-
-	Context->Initialize(Param);
 }

@@ -11,17 +11,4 @@ class PROJECTT_API APTGameState final : public AGameStateBase
 {
 	GENERATED_BODY()
 
-public:
-	UFUNCTION(BlueprintCallable, BlueprintPure)
-	FVector GetRandomZone() const;
-
-	UFUNCTION(BlueprintCallable, BlueprintPure)
-	bool IsInsideZone(const FVector& Loc) const;
-
-private:
-	void BeginPlay() override;
-
-private:
-	UPROPERTY(Transient)
-	class ADeadZone* DeadZone;
 };

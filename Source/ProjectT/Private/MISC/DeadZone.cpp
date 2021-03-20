@@ -19,9 +19,16 @@ FBox ADeadZone::GetDeadBox() const
 	const FVector MyLoc = GetActorLocation();
 	const FVector MySize = GetActorScale3D() * 50.0f;
 
-	const FVector BoxMin = MyLoc - MySize;
-	const FVector BoxMax = MyLoc + MySize;
-	return FBox{ BoxMin, BoxMax };
+	return FBox::BuildAABB(MyLoc, MySize);
+}
+
+FBox ADeadZone::GetSafeDeadBox() const
+{
+	const FVector MyLoc = GetActorLocation();
+	const FVector MySize =
+		(GetActorScale3D() - ZoneSafeVector) * 50.0f;
+
+	return FBox::BuildAABB(MyLoc, MySize);
 }
 
 void ADeadZone::BeginPlay()

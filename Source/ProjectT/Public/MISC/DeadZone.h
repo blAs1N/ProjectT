@@ -15,6 +15,7 @@ public:
 	ADeadZone();
 
 	FBox GetDeadBox() const;
+	FBox GetSafeDeadBox() const;
 
 	FORCEINLINE class UStaticMeshComponent* GetMesh() const noexcept { return Mesh; }
 
@@ -28,6 +29,9 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, meta = (AllowPrivateAccess = true))
 	UCurveFloat* Curve;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
+	FVector ZoneSafeVector;
 
 	FVector Loc;
 	FVector Size;

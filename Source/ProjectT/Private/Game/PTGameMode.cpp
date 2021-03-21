@@ -25,4 +25,3 @@ void APTGameMode::BeginPlay()
 	Super::BeginPlay();
 	DeadZone = *TActorIterator<ADeadZone>{ GetWorld() };
 }
-

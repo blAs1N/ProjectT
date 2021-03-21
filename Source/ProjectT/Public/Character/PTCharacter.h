@@ -39,6 +39,8 @@ private:
 	void BeginPlay() override;
 	void OnInitialize(int32 Key) override;
 
+	void Tick(float DeltaSeconds) override;
+
 	bool ShouldTakeDamage(float Damage, const FDamageEvent& DamageEvent,
 		AController* EventInstigator, AActor* DamageCauser) const override;
 
@@ -66,6 +68,11 @@ private:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
 	float BackPercent;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
+	float DeathRemainTime;
+
+	float DeathDelay;
 
 	UPROPERTY(EditDefaultsOnly, meta = (AllowPrivateAccess = true))
 	uint8 bLoadAsync : 1;

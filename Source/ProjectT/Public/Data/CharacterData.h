@@ -30,4 +30,7 @@ struct PROJECTT_API FCharacterData : public FTableRowBase
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	float Weight;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	float DeathDelay;
 };

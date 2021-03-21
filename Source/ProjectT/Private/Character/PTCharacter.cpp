@@ -10,6 +10,7 @@
 #include "Component/HookComponent.h"
 #include "Component/WeaponComponent.h"
 #include "Data/CharacterData.h"
+#include "Game/PTGameMode.h"
 #include "MISC/DataTableLoader.h"
 
 APTCharacter::APTCharacter(const FObjectInitializer& ObjectInitializer)
@@ -60,12 +61,15 @@ float APTCharacter::TakeDamage(float Damage, const FDamageEvent&
 
 void APTCharacter::Death()
 {
-	//Destroy();
+	Destroy();
 }
 
 void APTCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+	
+	if (HasAuthority())
+		bInvincible = true;
 
 	if (IsLocallyControlled())
 		OnTakeAnyDamage.AddDynamic(this, &APTCharacter::OnHit);
@@ -78,6 +82,28 @@ void APTCharacter::OnInitialize(int32 Key)
 
 	IInitializable::Execute_Initialize(HookComp, Key);
 	IInitializable::Execute_Initialize(WeaponComp, Key);
+}
+
+void APTCharacter::Tick(float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);
+
+	if (const auto* GM = GetWorld()->GetAuthGameMode<APTGameMode>())
+	{
+		if (GM->IsInsideZone(GetActorLocation()))
+		{
+			if (bInvincible)
+				bInvincible = false;
+			else
+				DeathRemainTime = 0.0f;
+		}
+		else if (!bInvincible)
+		{
+			DeathRemainTime += DeltaSeconds;
+			if (DeathRemainTime >= DeathDelay)
+				Death();
+		}
+	}
 }
 
 bool APTCharacter::ShouldTakeDamage(float Damage, const FDamageEvent&
@@ -106,6 +132,7 @@ void APTCharacter::OnGetData(const FCharacterData& Data)
 
 	GetCapsuleComponent()->SetCapsuleSize(Data.CapsuleRadius, Data.CapsuleHalfHeight);
 	GetCharacterMovement()->Mass = Data.Weight;
+	DeathDelay = Data.DeathDelay;
 }
 
 void APTCharacter::OnHit(AActor* DamagedActor, float Damage,

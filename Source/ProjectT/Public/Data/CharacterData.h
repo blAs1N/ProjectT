@@ -14,6 +14,12 @@ struct PROJECTT_API FCharacterData : public FTableRowBase
 	FText Name;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TSoftObjectPtr<USkeletalMesh> Mesh;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TSoftClassPtr<UAnimInstance> AnimClass;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	FCompositeModelParam ModelParam;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)

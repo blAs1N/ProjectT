@@ -4,6 +4,7 @@
 #include "Engine/DataTable.h"
 #include "Net/UnrealNetwork.h"
 #include "Character/PTCharacter.h"
+#include "Component/CompositeModelComponent.h"
 #include "Data/Weapon/WeaponData.h"
 #include "Equipment/Weapon.h"
 #include "MISC/DataTableLoader.h"
@@ -68,6 +69,7 @@ void UWeaponComponent::OnGetData(const FWeaponData& Data)
 
 		WeaponMesh->SetStaticMesh(Ptr.Get());
 		WeaponMesh->SetRelativeTransform(Data.Transform);
+
 		WeaponMesh->AttachToComponent(Owner->GetMesh(),
 			FAttachmentTransformRules::KeepRelativeTransform, Data.HandSocket);
 

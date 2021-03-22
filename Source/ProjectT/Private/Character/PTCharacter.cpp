@@ -115,17 +115,26 @@ bool APTCharacter::ShouldTakeDamage(float Damage, const FDamageEvent&
 
 void APTCharacter::OnGetData(const FCharacterData& Data)
 {
-	Cast<UCompositeModelComponent>(GetMesh())->SetParam(Data.ModelParam);
-	
 	const FVector MeshLoc{ 0.0f, 0.0f, Data.MeshZ };
 	const FQuat MeshRot{ FRotator{ 0.0f, Data.MeshYaw, 0.0f } };
 
 	if (IsLocallyControlled())
 	{
+		LoadObject(Data.Mesh, [Mesh = GetMesh()](const auto& Ptr)
+		{
+				Mesh->SetSkeletalMesh(Ptr.Get());
+		}, bLoadAsync);
+
+		LoadObject(Data.AnimClass, [Mesh = GetMesh()](const auto& Ptr)
+		{
+			Mesh->SetAnimClass(Ptr.Get());
+		}, bLoadAsync);
+
 		GetMesh()->SetRelativeLocationAndRotation(MeshLoc, MeshRot);
 	}
 	else
 	{
+		Cast<UCompositeModelComponent>(GetMesh())->SetParam(Data.ModelParam);
 		BaseTranslationOffset = MeshLoc;
 		BaseRotationOffset = MeshRot;
 	}

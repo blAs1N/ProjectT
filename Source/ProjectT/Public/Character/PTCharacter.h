@@ -14,7 +14,7 @@ class PROJECTT_API APTCharacter final : public ACharacter, public IInitializable
 	GENERATED_BODY()
 
 public:
-	APTCharacter(const FObjectInitializer& ObjectInitializer);
+	APTCharacter();
 
 	float TakeDamage(float Damage, const FDamageEvent& DamageEvent,
 		AController* EventInstigator, AActor* DamageCauser) override;
@@ -23,6 +23,7 @@ public:
 	void Death();
 
 	FORCEINLINE FVector GetPawnViewLocation() const override { return GetViewLocation(); }
+	FORCEINLINE class UCompositeModelComponent* GetModelComponent() const noexcept { return ModelComp; }
 	FORCEINLINE class UHookComponent* GetHookComponent() const noexcept { return HookComp; }
 	FORCEINLINE class UWeaponComponent* GetWeaponComponent() const noexcept { return WeaponComp; }
 	FORCEINLINE class UStaticMeshComponent* GetWeaponMeshComponent() const noexcept { return WeaponMeshComp; }
@@ -54,6 +55,9 @@ private:
 	FORCEINLINE bool IsLoadAsync_Implementation() const noexcept override { return bLoadAsync; }
 
 private:
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Component, meta = (AllowPrivateAccess = true))
+	UCompositeModelComponent* ModelComp;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Component, meta = (AllowPrivateAccess = true))
 	UHookComponent* HookComp;
 

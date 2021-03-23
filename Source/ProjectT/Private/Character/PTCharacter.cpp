@@ -13,10 +13,17 @@
 #include "Game/PTGameMode.h"
 #include "MISC/DataTableLoader.h"
 
-APTCharacter::APTCharacter(const FObjectInitializer& ObjectInitializer)
-	: Super(ObjectInitializer.SetDefaultSubobjectClass<UCompositeModelComponent>(MeshComponentName))
+APTCharacter::APTCharacter()
 {
 	PrimaryActorTick.bCanEverTick = true;
+
+	GetMesh()->bOnlyOwnerSee = true;
+	GetMesh()->CastShadow = false;
+
+	ModelComp = CreateDefaultSubobject<UCompositeModelComponent>(TEXT("TPS Model"));
+	ModelComp->SetupAttachment(RootComponent);
+	ModelComp->bCastHiddenShadow = true;
+	ModelComp->bOwnerNoSee = true;
 
 	HookComp = CreateDefaultSubobject<UHookComponent>(TEXT("Hook"));
 	WeaponComp = CreateDefaultSubobject<UWeaponComponent>(TEXT("Weapon"));
@@ -115,26 +122,28 @@ bool APTCharacter::ShouldTakeDamage(float Damage, const FDamageEvent&
 
 void APTCharacter::OnGetData(const FCharacterData& Data)
 {
+	LoadObject(Data.FPSMesh, [Mesh = GetMesh()](const auto& Ptr)
+	{
+		Mesh->SetSkeletalMesh(Ptr.Get());
+	}, bLoadAsync);
+
+	LoadObject(Data.FPSAnimClass, [Mesh = GetMesh()](const auto& Ptr)
+	{
+		Mesh->SetAnimClass(Ptr.Get());
+	}, bLoadAsync);
+
+	ModelComp->SetParam(Data.ModelParam);
+
 	const FVector MeshLoc{ 0.0f, 0.0f, Data.MeshZ };
 	const FQuat MeshRot{ FRotator{ 0.0f, Data.MeshYaw, 0.0f } };
 
 	if (IsLocallyControlled())
 	{
-		LoadObject(Data.Mesh, [Mesh = GetMesh()](const auto& Ptr)
-		{
-				Mesh->SetSkeletalMesh(Ptr.Get());
-		}, bLoadAsync);
-
-		LoadObject(Data.AnimClass, [Mesh = GetMesh()](const auto& Ptr)
-		{
-			Mesh->SetAnimClass(Ptr.Get());
-		}, bLoadAsync);
-
 		GetMesh()->SetRelativeLocationAndRotation(MeshLoc, MeshRot);
+		ModelComp->SetRelativeLocationAndRotation(MeshLoc, MeshRot);
 	}
 	else
 	{
-		Cast<UCompositeModelComponent>(GetMesh())->SetParam(Data.ModelParam);
 		BaseTranslationOffset = MeshLoc;
 		BaseRotationOffset = MeshRot;
 	}

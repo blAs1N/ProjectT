@@ -23,5 +23,6 @@ bool APTGameMode::IsInsideZone(const FVector& Loc) const
 void APTGameMode::BeginPlay()
 {
 	Super::BeginPlay();
-	DeadZone = *TActorIterator<ADeadZone>{ GetWorld() };
+	if (TActorIterator<ADeadZone> Iter{ GetWorld() })
+		DeadZone = *Iter;
 }

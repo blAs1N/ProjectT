@@ -137,16 +137,11 @@ void APTCharacter::OnGetData(const FCharacterData& Data)
 	const FVector MeshLoc{ 0.0f, 0.0f, Data.MeshZ };
 	const FQuat MeshRot{ FRotator{ 0.0f, Data.MeshYaw, 0.0f } };
 
-	if (IsLocallyControlled())
-	{
-		GetMesh()->SetRelativeLocationAndRotation(MeshLoc, MeshRot);
-		ModelComp->SetRelativeLocationAndRotation(MeshLoc, MeshRot);
-	}
-	else
-	{
-		BaseTranslationOffset = MeshLoc;
-		BaseRotationOffset = MeshRot;
-	}
+	GetMesh()->SetRelativeLocation(MeshLoc);
+	ModelComp->SetRelativeLocationAndRotation(MeshLoc, MeshRot);
+	
+	BaseTranslationOffset = MeshLoc;
+	BaseRotationOffset = MeshRot;
 
 	GetCapsuleComponent()->SetCapsuleSize(Data.CapsuleRadius, Data.CapsuleHalfHeight);
 	GetCharacterMovement()->Mass = Data.Weight;

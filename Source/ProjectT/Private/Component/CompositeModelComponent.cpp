@@ -86,9 +86,16 @@ void UCompositeModelComponent::OnLoadPiece(const TSoftObjectPtr<USkeletalMesh>& 
 
 void UCompositeModelComponent::Merge()
 {	
-	const auto* GI = GetWorld()->GetGameInstance<UPTGameInstance>();
-	const auto Model = GI ? GI->GetStorage()->
-		GetMergedModel(Skeleton, Pieces) : MergeDirect();
+	USkeletalMesh* Model = nullptr;
+	if (const auto* World = GetWorld())
+	{
+		if (const auto* GI = World->GetGameInstance<UPTGameInstance>())
+			Model = GI->GetStorage()->GetMergedModel(Skeleton, Pieces);
+		else
+			Model = MergeDirect();
+	}
+	else
+		Model = MergeDirect();
 
 	SetSkeletalMesh(Model);
 

@@ -4,9 +4,23 @@
 #include "Components/StaticMeshComponent.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Net/UnrealNetwork.h"
 #include "CableComponent.h"
 #include "Data/Hook/HookContextParam.h"
 #include "Equipment/Hook.h"
+
+void UHookContext::Initialize(const FHookContextParam& Param)
+{
+	Hook = GetTypedOuter<AHook>();
+	Target = Hook->GetOwner<ACharacter>();
+
+	CollisionProfile = Param.CollisionProfile;
+	HandSocket = Param.HandSocket;
+
+	Stat = Param.Stat;
+	HookTolerance = Param.HookTolerance;
+	MoveTolerance = Param.MoveTolerance;
+}
 
 void UHookContext::TraceHookTarget()
 {
@@ -56,23 +70,6 @@ FVector UHookContext::GetHookLocation() const
 FVector UHookContext::GetHandLocation() const
 {
 	return Target->GetMesh()->GetSocketLocation(HandSocket);
-}
-
-void UHookContext::PostInitProperties()
-{
-	Super::PostInitProperties();
-	Hook = GetTypedOuter<AHook>();
-	if (!Hook) return;
-
-	Target = Hook->GetOwner<ACharacter>();
-
-	const auto Param = Hook->GetContextParam();
-	CollisionProfile = Param.CollisionProfile;
-	HandSocket = Param.HandSocket;
-
-	Stat = Param.Stat;
-	HookTolerance = Param.HookTolerance;
-	MoveTolerance = Param.MoveTolerance;
 }
 
 void UHookContext::MulticastSetLength_Implementation(float NewLength)

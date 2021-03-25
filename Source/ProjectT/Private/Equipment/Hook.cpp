@@ -55,7 +55,7 @@ void AHook::Initialize(const FHookData& Data, bool bLoadAsync)
 	HookMesh->SetRelativeTransform(HookTransform);
 	Cable->CableWidth = Data.Thickness;
 
-	AllocateState();
+	CreateContext();
 
 	if (const auto MyOwner = GetOwner<ACharacter>())
 		Cable->SetAttachEndToComponent(MyOwner->GetMesh(), HandSocket);
@@ -89,15 +89,6 @@ void AHook::SetState(EHookState NewState)
 		CurDelay = 0.0f;
 }
 
-FHookContextParam AHook::GetContextParam() const
-{
-	return FHookContextParam
-	{
-		CollisionProfile, HandSocket,
-		Stat, HookTolerance, MoveTolerance
-	};
-}
-
 void AHook::BeginPlay()
 {
 	Super::BeginPlay();
@@ -107,15 +98,17 @@ void AHook::BeginPlay()
 
 	Cable->AttachToComponent(HookMesh,
 		FAttachmentTransformRules::KeepRelativeTransform, EndPointSocket);
+
+	States.Emplace(new FIdleState);
+	States.Emplace(new FThrowState);
+	States.Emplace(new FSwingState);
+	States.Emplace(new FMoveState);
 }
 
 void AHook::SetOwner(AActor* NewOwner)
 {
 	Super::SetOwner(NewOwner);
 	OnRep_Owner();
-
-	if (bInit)
-		AllocateState();
 }
 
 void AHook::OnRep_Owner()
@@ -123,14 +116,17 @@ void AHook::OnRep_Owner()
 	if (const auto MyOwner = GetOwner<ACharacter>())
 	{
 		Cable->SetAttachEndToComponent(MyOwner->GetMesh(), HandSocket);
-		SetRole(MyOwner->GetLocalRole());
+		CreateContext();
 	}
-	else SetRole(ROLE_None);
 }
 
 void AHook::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
+
+	if (const auto MyOwner = GetOwner())
+		SetRole(MyOwner->GetLocalRole());
+
 	if (GetLocalRole() < ROLE_AutonomousProxy)
 		return;
 
@@ -179,16 +175,24 @@ void AHook::LoadAssets(const FHookData& Data, bool bLoadAsync)
 	}
 }
 
-void AHook::AllocateState()
+void AHook::CreateContext()
 {
-	const auto MyRole = GetLocalRole();
-	if (MyRole < ROLE_AutonomousProxy || States.Num() > 0) return;
-	
-	if (MyRole == ROLE_Authority)
+	if (bInit && HasAuthority())
 		Context = NewObject<UHookContext>(this);
+	
+	OnRep_Context();
+}
 
-	States.Emplace(new FIdleState);
-	States.Emplace(new FThrowState);
-	States.Emplace(new FSwingState);
-	States.Emplace(new FMoveState);
+void AHook::OnRep_Context()
+{
+	if (!bInit || GetLocalRole() == ROLE_None)
+		return;
+
+	FHookContextParam Param
+	{
+		CollisionProfile, HandSocket,
+		Stat, HookTolerance, MoveTolerance
+	};
+
+	Context->Initialize(Param);
 }

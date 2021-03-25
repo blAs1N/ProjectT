@@ -14,6 +14,8 @@ class PROJECTT_API UHookContext final : public UNetworkObject
 	GENERATED_BODY()
 	
 public:
+	void Initialize(const struct FHookContextParam& Param);
+
 	void TraceHookTarget();
 	void SetState(EHookState NewState);
 
@@ -37,8 +39,6 @@ public:
 	FORCEINLINE const FHookStat& GetStat() const noexcept { return Stat; }
 
 private:
-	void PostInitProperties() override;
-
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastSetLength(float NewLength);
 

@@ -24,7 +24,6 @@ public:
 	void MoveTo();
 
 	void SetState(EHookState NewState);
-	struct FHookContextParam GetContextParam() const;
 
 	FORCEINLINE class UStaticMeshComponent* GetHookMesh() const noexcept { return HookMesh; }
 	FORCEINLINE class UCableComponent* GetCable() const noexcept { return Cable; }
@@ -43,13 +42,17 @@ private:
 	bool ReplicateSubobjects(UActorChannel* Channel,
 		FOutBunch* Bunch, FReplicationFlags* RepFlags) override;
 
+	void CreateContext();
+
+	UFUNCTION()
+	void OnRep_Context();
+
 	void LoadAssets(const FHookData& Data, bool bLoadAsync);
-	void AllocateState();
 
 private:
 	TArray<TUniquePtr<class FStateBase>> States;
 
-	UPROPERTY(Transient, Replicated)
+	UPROPERTY(Transient, ReplicatedUsing = OnRep_Context)
 	class UHookContext* Context;
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))

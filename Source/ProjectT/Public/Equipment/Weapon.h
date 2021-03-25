@@ -28,9 +28,6 @@ public:
 	void Reload();
 
 private:
-	void SetOwner(AActor* NewOwner) override;
-	void OnRep_Owner() override;
-
 	void Tick(float DeltaSeconds) override;
 
 	void Shoot();

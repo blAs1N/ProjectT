@@ -56,23 +56,12 @@ void AWeapon::Reload()
 		State = EWeaponState::Reload;
 }
 
-void AWeapon::SetOwner(AActor* NewOwner)
-{
-	Super::SetOwner(NewOwner);
-	OnRep_Owner();
-}
-
-void AWeapon::OnRep_Owner()
-{
-	if (const auto MyOwner = GetOwner())
-		SetRole(MyOwner->GetLocalRole());
-	else
-		SetRole(ROLE_None);
-}
-
 void AWeapon::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
+
+	if (const auto MyOwner = GetOwner())
+		SetRole(MyOwner->GetLocalRole());
 
 	FireLag += DeltaSeconds;
 

@@ -5,6 +5,7 @@
 #include "Components/StaticMeshComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "Net/UnrealNetwork.h"
 #include "UObject/SoftObjectPtr.h"
 #include "Component/CompositeModelComponent.h"
 #include "Component/HookComponent.h"
@@ -82,13 +83,40 @@ void APTCharacter::BeginPlay()
 		OnTakeAnyDamage.AddDynamic(this, &APTCharacter::OnHit);
 }
 
-void APTCharacter::OnInitialize(int32 Key)
+void APTCharacter::OnInitialize(int32 InKey)
 {
-	GetData<FCharacterData>(CharacterDataTable, Key,
-		[this](auto Data) { OnGetData(Data); }, bLoadAsync);
+	Key = InKey;
+	OnRep_Key();
 
 	IInitializable::Execute_Initialize(HookComp, Key);
 	IInitializable::Execute_Initialize(WeaponComp, Key);
+}
+
+void APTCharacter::OnGetData(const FCharacterData& Data)
+{
+	LoadObject(Data.FPSMesh, [Mesh = GetMesh()](const auto& Ptr)
+	{
+		Mesh->SetSkeletalMesh(Ptr.Get());
+	}, bLoadAsync);
+
+	LoadObject(Data.FPSAnimClass, [Mesh = GetMesh()](const auto& Ptr)
+	{
+		Mesh->SetAnimClass(Ptr.Get());
+	}, bLoadAsync);
+
+	ModelComp->SetParam(Data.ModelParam);
+
+	const FVector MeshLoc{ 0.0f, 0.0f, Data.MeshZ };
+	const FQuat MeshRot{ FRotator{ 0.0f, Data.MeshYaw, 0.0f } };
+
+	GetMesh()->SetRelativeLocation(MeshLoc);
+	ModelComp->SetRelativeLocationAndRotation(MeshLoc, MeshRot);
+
+	BaseTranslationOffset = MeshLoc;
+
+	GetCapsuleComponent()->SetCapsuleSize(Data.CapsuleRadius, Data.CapsuleHalfHeight);
+	GetCharacterMovement()->Mass = Data.Weight;
+	DeathDelay = Data.DeathDelay;
 }
 
 void APTCharacter::Tick(float DeltaSeconds)
@@ -113,6 +141,13 @@ void APTCharacter::Tick(float DeltaSeconds)
 	}
 }
 
+void APTCharacter::GetLifetimeReplicatedProps(
+	TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME(APTCharacter, Key);
+}
+
 bool APTCharacter::ShouldTakeDamage(float Damage, const FDamageEvent&
 	DamageEvent, AController* EventInstigator, AActor* DamageCauser) const
 {
@@ -120,32 +155,10 @@ bool APTCharacter::ShouldTakeDamage(float Damage, const FDamageEvent&
 		EventInstigator, DamageCauser) && !bInvincible;
 }
 
-void APTCharacter::OnGetData(const FCharacterData& Data)
+void APTCharacter::OnRep_Key()
 {
-	LoadObject(Data.FPSMesh, [Mesh = GetMesh()](const auto& Ptr)
-	{
-		Mesh->SetSkeletalMesh(Ptr.Get());
-	}, bLoadAsync);
-
-	LoadObject(Data.FPSAnimClass, [Mesh = GetMesh()](const auto& Ptr)
-	{
-		Mesh->SetAnimClass(Ptr.Get());
-	}, bLoadAsync);
-
-	ModelComp->SetParam(Data.ModelParam);
-
-	const FVector MeshLoc{ 0.0f, 0.0f, Data.MeshZ };
-	const FQuat MeshRot{ FRotator{ 0.0f, Data.MeshYaw, 0.0f } };
-
-	GetMesh()->SetRelativeLocation(MeshLoc);
-	ModelComp->SetRelativeLocationAndRotation(MeshLoc, MeshRot);
-	
-	BaseTranslationOffset = MeshLoc;
-	BaseRotationOffset = MeshRot;
-
-	GetCapsuleComponent()->SetCapsuleSize(Data.CapsuleRadius, Data.CapsuleHalfHeight);
-	GetCharacterMovement()->Mass = Data.Weight;
-	DeathDelay = Data.DeathDelay;
+	GetData<FCharacterData>(CharacterDataTable, Key,
+		[this](const auto& Data) { OnGetData(Data); }, bLoadAsync);
 }
 
 void APTCharacter::OnHit(AActor* DamagedActor, float Damage,

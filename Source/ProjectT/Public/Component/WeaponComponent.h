@@ -34,7 +34,7 @@ private:
 		<FLifetimeProperty>& OutLifetimeProps) const override;
 
 	UFUNCTION()
-	void OnRep_Weapon();
+	void OnRep_WeaponAndKey();
 
 	UFUNCTION(Server, Reliable, WithValidation)
 	void ServerBeginFire();
@@ -56,8 +56,9 @@ private:
 	UPROPERTY(EditDefaultsOnly, meta = (AllowPrivateAccess = true))
 	TSubclassOf<class AWeapon> WeaponClass;
 
-	UPROPERTY(Transient, ReplicatedUsing = OnRep_Weapon)
+	UPROPERTY(Transient, ReplicatedUsing = OnRep_WeaponAndKey)
 	AWeapon* WeaponInst;
 
+	UPROPERTY(Transient, ReplicatedUsing = OnRep_WeaponAndKey)
 	int32 Key;
 };

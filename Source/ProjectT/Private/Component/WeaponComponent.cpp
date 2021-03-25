@@ -51,13 +51,13 @@ void UWeaponComponent::BeginPlay()
 	Param.Owner = GetOwner();
 
 	WeaponInst = GetWorld()->SpawnActor<AWeapon>(WeaponClass, Param);
-	OnRep_Weapon();
+	OnRep_WeaponAndKey();
 }
 
 void UWeaponComponent::OnInitialize(int32 InKey)
 {
 	Key = InKey;
-	OnRep_Weapon();
+	OnRep_WeaponAndKey();
 }
 
 void UWeaponComponent::OnGetData(const FWeaponData& Data)
@@ -91,11 +91,12 @@ void UWeaponComponent::GetLifetimeReplicatedProps(
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME(UWeaponComponent, WeaponInst);
+	DOREPLIFETIME(UWeaponComponent, Key);
 }
 
-void UWeaponComponent::OnRep_Weapon()
+void UWeaponComponent::OnRep_WeaponAndKey()
 {
-	if (!Key) return;
+	if (!WeaponInst || !Key) return;
 
 	const bool bLoadAsync = IInitializable::Execute_IsLoadAsync(GetOwner());
 	GetData<FWeaponData>(WeaponDataTable, Key, [this, bLoadAsync](const auto& Data)

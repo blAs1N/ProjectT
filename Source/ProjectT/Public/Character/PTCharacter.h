@@ -38,14 +38,19 @@ protected:
 
 private:
 	void BeginPlay() override;
-	void OnInitialize(int32 Key) override;
+	void OnInitialize(int32 InKey) override;
+	void OnGetData(const struct FCharacterData& Data);
 
 	void Tick(float DeltaSeconds) override;
+
+	void GetLifetimeReplicatedProps(TArray
+		<FLifetimeProperty>& OutLifetimeProps) const override;
 
 	bool ShouldTakeDamage(float Damage, const FDamageEvent& DamageEvent,
 		AController* EventInstigator, AActor* DamageCauser) const override;
 
-	void OnGetData(const struct FCharacterData& Data);
+	UFUNCTION()
+	void OnRep_Key();
 
 	UFUNCTION()
 	void OnHit(AActor* DamagedActor, float Damage, const UDamageType*
@@ -77,6 +82,9 @@ private:
 	float DeathRemainTime;
 
 	float DeathDelay;
+
+	UPROPERTY(Transient, ReplicatedUsing = OnRep_Key)
+	int32 Key;
 
 	UPROPERTY(EditDefaultsOnly, meta = (AllowPrivateAccess = true))
 	uint8 bLoadAsync : 1;

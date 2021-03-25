@@ -32,7 +32,7 @@ private:
 		<FLifetimeProperty>& OutLifetimeProps) const override;
 
 	UFUNCTION()
-	void OnRep_Hook();
+	void OnRep_HookAndKey();
 
 	UFUNCTION(Server, Reliable, WithValidation)
 	void ServerHook();
@@ -54,8 +54,9 @@ private:
 	UPROPERTY(EditDefaultsOnly, meta = (AllowPrivateAccess = true))
 	TSubclassOf<class AHook> HookClass;
 
-	UPROPERTY(Transient, ReplicatedUsing = OnRep_Hook)
+	UPROPERTY(Transient, ReplicatedUsing = OnRep_HookAndKey)
 	AHook* HookInst;
 	
+	UPROPERTY(Transient, ReplicatedUsing = OnRep_HookAndKey)
 	int32 Key;
 };
